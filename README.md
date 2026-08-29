@@ -76,7 +76,7 @@ site.
 This repository includes a GitHub Actions workflow for Pages. To publish a
 fork, select **GitHub Actions** under **Settings > Pages**, then push to `main`
 or run the workflow manually. The deployment contains only the static editor,
-its reference data, license, and notices.
+its reference data, and license.
 
-See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for data sources and code
-credits. P3R Save Lab is licensed under the [MIT License](LICENSE).
+Technical and data sources are credited on the editor page. P3R Save Lab is
+licensed under the [MIT License](LICENSE).

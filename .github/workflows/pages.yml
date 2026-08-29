@@ -27,7 +27,7 @@ jobs:
       - name: Build an allowlisted static artifact
         run: |
           mkdir -p _site
-          cp index.html styles.css .nojekyll LICENSE THIRD_PARTY_NOTICES.md _site/
+          cp index.html styles.css .nojekyll LICENSE _site/
           cp -R js data _site/
 
       - name: Configure Pages
