@@ -1,5 +1,6 @@
 import {
   P3R_CLASS_MARKER,
+  PLAY_TIME_TICKS_PER_SECOND,
   SUPPORTED_VERSIONS,
 } from "./constants.js";
 import {
@@ -195,6 +196,7 @@ export class P3RSave {
   }
 
   getHeader() {
+    const playTimeTicks = this.readHeaderNumber("PlayTime", "UInt32Property", 4);
     return {
       slotName: this.readHeaderString("SaveSlotName"),
       firstName: this.readHeaderByteString("FirstName"),
@@ -205,7 +207,9 @@ export class P3RSave {
       timeZone: this.readHeaderEnum("TimeZone"),
       playerLevel: this.readHeaderNumber("PlayerLevel", "UInt32Property", 4),
       difficulty: this.readHeaderNumber("Difficulty", "UInt16Property", 2),
-      playTime: this.readHeaderNumber("PlayTime", "UInt32Property", 4),
+      playTime: playTimeTicks === null
+        ? null
+        : Math.floor(playTimeTicks / PLAY_TIME_TICKS_PER_SECOND),
     };
   }
 }

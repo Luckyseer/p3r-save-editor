@@ -1,6 +1,7 @@
 import {
   CORE_FIELDS,
   PARTY_MEMBERS,
+  PLAY_TIME_TICKS_PER_SECOND,
   SOCIAL_LINKS,
   SOCIAL_STATS,
   VERSION_INDEX_OFFSET,
@@ -12,10 +13,13 @@ export function versionedIndex(save, versionOneIndex) {
 
 export function getCoreValues(save) {
   return Object.fromEntries(
-    Object.entries(CORE_FIELDS).map(([key, field]) => [
-      key,
-      save.getWord(versionedIndex(save, field.index)),
-    ]),
+    Object.entries(CORE_FIELDS).map(([key, field]) => {
+      const storedValue = save.getWord(versionedIndex(save, field.index));
+      const value = key === "playTime"
+        ? Math.floor(storedValue / PLAY_TIME_TICKS_PER_SECOND)
+        : storedValue;
+      return [key, value];
+    }),
   );
 }
 
@@ -25,8 +29,9 @@ export function setCoreValue(save, key, value) {
   if (!Number.isInteger(value) || value < field.min || value > field.max) {
     throw new Error(`${field.label} must be between ${field.min} and ${field.max}.`);
   }
-  save.setWord(versionedIndex(save, field.index), value);
-  if (key === "playTime") save.writeHeaderNumber("PlayTime", value);
+  const storedValue = key === "playTime" ? value * PLAY_TIME_TICKS_PER_SECOND : value;
+  save.setWord(versionedIndex(save, field.index), storedValue);
+  if (key === "playTime") save.writeHeaderNumber("PlayTime", storedValue);
 }
 
 export function getParty(save) {
@@ -94,4 +99,3 @@ export function setSocialLinkRank(save, versionOneIndex, rank) {
   const oldWord = save.getWord(index);
   save.setWord(index, (oldWord & 0xffffff00) | rank);
 }
-

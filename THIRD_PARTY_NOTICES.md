@@ -38,6 +38,10 @@ SOFTWARE.
   [Hertzeil/p3rse](https://github.com/Hertzeil/p3rse). No code from that
   project is bundled; the repository did not display a license when this
   editor was prepared.
+- The playtime field and its supported limit were cross-checked against
+  [RealDarkCraft/persona-3-reload-save-editor](https://github.com/RealDarkCraft/persona-3-reload-save-editor).
+  No code from that project is bundled; the repository did not display a
+  license when this editor was prepared.
 - Inventory and Persona save layouts were cross-checked against
   [rirurin/p3rpc.nativetypes](https://github.com/rirurin/p3rpc.nativetypes),
   which is licensed under LGPL-3.0. No library code is bundled or linked; this

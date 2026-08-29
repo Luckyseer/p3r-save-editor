@@ -7,6 +7,10 @@ export const P3R_CLASS_MARKER = "/Script/xrd777.XRD777SaveGame\0";
 
 export const SUPPORTED_VERSIONS = new Set([1, 2]);
 export const VERSION_INDEX_OFFSET = Object.freeze({ 1: 0, 2: 4 });
+// P3R stores this counter at 30 ticks per elapsed second. Its maximum stored
+// value of 107,998,200 corresponds to the game's 999h 59m display limit.
+export const PLAY_TIME_TICKS_PER_SECOND = 30;
+export const MAX_PLAY_TIME_SECONDS = (999 * 3600) + (59 * 60);
 
 // The serialized ItemBag begins 12 bytes earlier than the current in-memory
 // UGlobalWork declaration. These bases were verified against three real Steam
@@ -29,7 +33,7 @@ export const ITEM_CATEGORIES = Object.freeze({
 
 export const CORE_FIELDS = Object.freeze({
   money: { label: "Yen", index: 7257, min: 0, max: 9_999_999 },
-  playTime: { label: "Play time", index: 12832, min: 0, max: 359_999_999 },
+  playTime: { label: "Play time", index: 12832, min: 0, max: MAX_PLAY_TIME_SECONDS },
 });
 
 // Cumulative thresholds from Xrd777's HeroParameterDataAsset. The source

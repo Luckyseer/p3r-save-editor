@@ -1,5 +1,5 @@
 import { bytesEqual } from "./binary.js";
-import { ITEM_CATEGORIES } from "./constants.js";
+import { ITEM_CATEGORIES, MAX_PLAY_TIME_SECONDS } from "./constants.js";
 import {
   getCoreValues,
   getParty,
@@ -152,7 +152,7 @@ function renderOverview() {
   const metrics = [
     ["Character", characterName, header.slotName || "Save slot"],
     ["Calendar", calendar, header.timeZone || "Story date"],
-    ["Play time", formatDuration(core.playTime), `${formatNumber(core.playTime)} seconds`],
+    ["Play time", formatDuration(core.playTime), "Stored in this save"],
     ["Format", describeFormat(state.format), `Save version ${state.save.version}`],
   ];
   elements.overviewCards.innerHTML = metrics.map(([label, value, detail]) => `
@@ -160,7 +160,15 @@ function renderOverview() {
   `).join("");
   elements.coreFields.innerHTML = `
     <div class="field"><label><span>Yen</span><input type="number" min="0" max="9999999" step="1" value="${core.money}" data-core="money" /></label><small>0 to 9,999,999</small></div>
-    <div class="field"><label><span>Play time (seconds)</span><input type="number" min="0" max="359999999" step="1" value="${core.playTime}" data-core="playTime" /></label><small>${escapeHtml(formatDuration(core.playTime))}</small></div>
+    <div class="field">
+      <span class="field-group-label">Play time</span>
+      <div class="play-time-inputs">
+        <label><span>Hours</span><input type="number" min="0" max="999" step="1" value="${Math.floor(core.playTime / 3600)}" data-playtime-part="hours" /></label>
+        <label><span>Minutes</span><input type="number" min="0" max="59" step="1" value="${Math.floor((core.playTime % 3600) / 60)}" data-playtime-part="minutes" /></label>
+        <label><span>Seconds</span><input type="number" min="0" max="59" step="1" value="${core.playTime % 60}" data-playtime-part="seconds" /></label>
+      </div>
+      <small>Up to 999h 59m</small>
+    </div>
   `;
 }
 
@@ -434,13 +442,31 @@ function bindEditorEvents() {
         setItemQuantity(state.save, id, after);
         markChange(`item:${id}`, `${itemName(id)} quantity`, before, after);
       }, renderInventory);
+    } else if (target.matches("[data-playtime-part]")) {
+      editSafely(() => {
+        const before = getCoreValues(state.save).playTime;
+        const readPart = (part, label) => parseInteger(
+          elements.coreFields.querySelector(`[data-playtime-part="${part}"]`).value,
+          label,
+        );
+        const hours = readPart("hours", "Play time hours");
+        const minutes = readPart("minutes", "Play time minutes");
+        const seconds = readPart("seconds", "Play time seconds");
+        if (hours < 0 || minutes < 0 || seconds < 0 || hours > 999 || minutes > 59 || seconds > 59) {
+          throw new Error("Play time must use 0-999 hours and 0-59 minutes or seconds.");
+        }
+        const after = (hours * 3600) + (minutes * 60) + seconds;
+        if (after > MAX_PLAY_TIME_SECONDS) throw new Error("Play time cannot exceed 999h 59m.");
+        setCoreValue(state.save, "playTime", after);
+        markChange("core:playTime", "Play time", formatDuration(before), formatDuration(after));
+      }, renderOverview);
     } else if (target.matches("[data-core]")) {
       const key = target.dataset.core;
       editSafely(() => {
         const before = getCoreValues(state.save)[key];
-        const after = parseInteger(target.value, key === "money" ? "Yen" : "Play time");
+        const after = parseInteger(target.value, "Yen");
         setCoreValue(state.save, key, after);
-        markChange(`core:${key}`, key === "money" ? "Yen" : "Play time (seconds)", before, after);
+        markChange(`core:${key}`, "Yen", before, after);
       }, renderOverview);
     } else if (target.matches("[data-party-member]")) {
       const memberKey = target.dataset.partyMember;

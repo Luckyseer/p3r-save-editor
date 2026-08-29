@@ -100,6 +100,10 @@ select:focus, input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgb
 .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 13px; }
 .field label { display: block; }
 .field small { display: block; color: #7788be; margin-top: 5px; font-size: .68rem; }
+.field-group-label { display: block; color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .09em; margin-bottom: 7px; }
+.play-time-inputs { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }
+.play-time-inputs label > span { font-size: .62rem; }
+.play-time-inputs input { padding-inline: 7px; text-align: center; }
 .change-list { max-height: 240px; overflow: auto; }
 .change-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 9px 0; border-bottom: 1px solid rgba(125,169,255,.1); font-size: .8rem; }
 .change-row small { color: var(--cyan-soft); }
