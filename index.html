@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="theme-color" content="#07135e" />
+    <meta
+      name="description"
+      content="A private Persona 3 Reload save editor for Steam and decrypted saves."
+    />
+    <title>P3R Save Lab</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./js/app.js"></script>
+  </head>
+  <body>
+    <div class="ambient-grid" aria-hidden="true"></div>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="P3R Save Lab home">
+        <span class="brand-mark">P3</span>
+        <span><strong>Save Lab</strong><small>Reload editor</small></span>
+      </a>
+    </header>
+
+    <main id="top">
+      <section id="landing" class="landing shell">
+        <div class="hero-copy">
+          <p class="eyebrow">Unofficial browser save editor</p>
+          <h1>Your save.<br /><em>Your rules.</em></h1>
+          <p class="hero-lede">
+            Inspect and edit P3R inventory, party values, Social Links, and your
+            Persona stock. Your save stays inside this browser tab.
+          </p>
+          <div class="hero-points" aria-label="Editor features">
+            <span>Steam + decrypted saves</span>
+            <span>No installation</span>
+            <span>No uploads</span>
+          </div>
+        </div>
+
+        <div class="load-panel panel">
+          <div class="step-label">01 / Load save</div>
+          <label class="format-field">
+            <span>Input format</span>
+            <select id="formatSelect">
+              <option value="auto">Auto-detect (recommended)</option>
+              <option value="steam">Steam encrypted</option>
+              <option value="gvas">Decrypted save</option>
+            </select>
+          </label>
+          <label id="dropZone" class="drop-zone" for="saveInput">
+            <input id="saveInput" type="file" accept=".sav,application/octet-stream" />
+            <span class="drop-icon" aria-hidden="true">↓</span>
+            <strong>Drop a .sav file here</strong>
+            <span>or click to choose one</span>
+            <small>Maximum file size: 10 MB</small>
+          </label>
+          <details class="save-location-guide">
+            <summary>Where is my Steam save?</summary>
+            <ol>
+              <li>Close Persona 3 Reload.</li>
+              <li>Press <kbd>Win</kbd> + <kbd>R</kbd>, paste <code>%APPDATA%\SEGA\P3R\Steam</code>, and press Enter.</li>
+              <li>Open the numbered folder and copy the <code>SaveDataNNN.sav</code> file you want to edit somewhere safe.</li>
+            </ol>
+          </details>
+          <div class="warning-strip">
+            <strong>Back up first.</strong> Any save modification can cause lost
+            progress, crashes, or an unusable save.
+          </div>
+          <p id="loadStatus" class="status-line" role="status"></p>
+        </div>
+      </section>
+
+      <section id="editor" class="editor-shell" hidden>
+        <aside class="editor-sidebar">
+          <div class="loaded-file">
+            <span>Loaded save</span>
+            <strong id="loadedFileName">—</strong>
+            <small id="loadedFileMeta">—</small>
+          </div>
+          <nav class="editor-nav" aria-label="Save sections">
+            <button class="nav-item active" data-tab="overview"><span>01</span>Overview</button>
+            <button class="nav-item" data-tab="inventory"><span>02</span>Inventory</button>
+            <button class="nav-item" data-tab="party"><span>03</span>Party</button>
+            <button class="nav-item" data-tab="personas"><span>04</span>Personas</button>
+            <button class="nav-item" data-tab="social"><span>05</span>Social</button>
+          </nav>
+          <div class="sidebar-note">
+            <strong>Privacy note</strong>
+            <p>Your save stays in this browser tab.</p>
+          </div>
+        </aside>
+
+        <div class="editor-main">
+          <section class="tab-panel active" data-panel="overview">
+            <div class="section-heading">
+              <div><p class="eyebrow">Save dashboard</p><h2>Overview</h2></div>
+            </div>
+            <div id="overviewCards" class="overview-grid"></div>
+            <div class="content-grid two-columns">
+              <article class="panel content-card">
+                <div class="card-heading"><h3>Core values</h3><span>Verified fields</span></div>
+                <div id="coreFields" class="field-grid"></div>
+              </article>
+              <article class="panel content-card">
+                <div class="card-heading"><h3>Session changes</h3><span id="changeCount">0 edits</span></div>
+                <div id="changeList" class="change-list empty-state">No changes yet.</div>
+              </article>
+            </div>
+            <article class="panel safety-card">
+              <div class="safety-symbol">!</div>
+              <div>
+                <h3>Save editing is inherently risky</h3>
+                <p>
+                  This tool validates structure and ranges, but cannot guarantee that every
+                  game-state combination is logically valid. Keep an untouched backup and
+                  never test an edited file as your only copy.
+                </p>
+              </div>
+            </article>
+          </section>
+
+          <section class="tab-panel" data-panel="inventory">
+            <div class="section-heading">
+              <div><p class="eyebrow">All item categories</p><h2>Inventory</h2></div>
+              <span id="inventorySummary" class="section-stat">—</span>
+            </div>
+            <div class="toolbar panel">
+              <label class="search-field"><span class="sr-only">Search items</span><input id="itemSearch" type="search" placeholder="Search by name or ID" /></label>
+              <label><span>Category</span><select id="itemCategory"><option value="all">All categories</option></select></label>
+              <label class="check-field"><input id="ownedOnly" type="checkbox" /><span>Owned only</span></label>
+              <label class="check-field"><input id="showUnused" type="checkbox" /><span>Show unused IDs</span></label>
+            </div>
+            <div class="table-panel panel">
+              <div class="data-table inventory-table" role="table" aria-label="Inventory items">
+                <div class="table-row table-head" role="row"><span>Item</span><span>Category</span><span>ID</span><span>Quantity</span></div>
+                <div id="inventoryRows"></div>
+              </div>
+              <div class="pagination"><button id="itemPrev" class="button button-quiet">← Previous</button><span id="itemPage">—</span><button id="itemNext" class="button button-quiet">Next →</button></div>
+            </div>
+          </section>
+
+          <section class="tab-panel" data-panel="party">
+            <div class="section-heading"><div><p class="eyebrow">Character values</p><h2>Party</h2></div><span class="section-stat">Ranges enforced</span></div>
+            <div class="info-callout">HP/SP changes edit current values, not calculated maximums. Level and EXP are independent fields; use combinations the game can plausibly produce.</div>
+            <div id="partyGrid" class="party-grid"></div>
+          </section>
+
+          <section class="tab-panel" data-panel="personas">
+            <div class="section-heading"><div><p class="eyebrow">Protagonist stock</p><h2>Personas</h2></div><span class="section-stat">12 slots</span></div>
+            <div class="info-callout warning">
+              This edits the Personas currently carried by the protagonist, not their Velvet Room Compendium registrations. Replacing a slot resets it to that Persona’s verified base level, stats, and starting skills. Entries marked DLC should only be used when that content is owned.
+            </div>
+            <div id="personaGrid" class="persona-grid"></div>
+          </section>
+
+          <section class="tab-panel" data-panel="social">
+            <div class="section-heading"><div><p class="eyebrow">Relationships & attributes</p><h2>Social</h2></div><span class="section-stat">Rank 0–10</span></div>
+            <div class="content-grid social-layout">
+              <article class="panel content-card"><div class="card-heading"><h3>Social stats</h3><span>Raw point totals</span></div><div id="socialStats" class="field-grid"></div></article>
+              <article class="panel content-card"><div class="card-heading"><h3>Social Links</h3><span>Upper progress data preserved</span></div><div id="socialLinks" class="social-links"></div></article>
+            </div>
+          </section>
+
+        </div>
+
+        <div class="export-bar">
+          <div class="export-status"><span id="dirtyDot"></span><strong id="dirtyLabel">No staged changes</strong><small>Original file remains untouched</small></div>
+          <button id="resetChanges" class="button button-quiet" disabled>Reset changes</button>
+          <button id="downloadSave" class="button button-primary" disabled>Validate & download</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer shell">
+      <p>Unofficial fan tool. Not affiliated with ATLUS or SEGA.</p>
+      <p><a href="https://github.com/illusionyy/P3R-Save-EnDecryptor">Encryption reference</a> · <a href="https://github.com/Hertzeil/p3rse">Save offset reference</a> · <a href="https://github.com/rirurin/p3rpc.nativetypes">Native layout reference</a> · <a href="https://github.com/aqiu384/megaten-database">Persona data reference</a> · <a href="./THIRD_PARTY_NOTICES.md">Notices</a></p>
+    </footer>
+
+    <dialog id="safetyDialog" class="safety-dialog">
+      <form method="dialog">
+        <div class="dialog-icon">!</div>
+        <p class="eyebrow">Before you edit</p>
+        <h2>Keep your original save safe.</h2>
+        <p>Incorrect or story-incompatible values can make a save unloadable, cause crashes, or permanently block progress. This tool cannot account for every game flag combination.</p>
+        <ul><li>Exit P3R before replacing a live save.</li><li>Keep an untouched backup outside the Steam save folder.</li><li>Test the edited file before overwriting anything else.</li></ul>
+        <button class="button button-primary" value="confirm">I understand</button>
+      </form>
+    </dialog>
+
+    <dialog id="skillDialog" class="skill-dialog">
+      <div class="skill-dialog-content">
+        <div class="skill-dialog-heading">
+          <div><p class="eyebrow">Persona skill</p><h2 id="skillDialogTitle">Choose a skill</h2></div>
+          <button id="closeSkillDialog" class="button button-quiet" type="button">Cancel</button>
+        </div>
+        <label class="skill-search"><span>Search known skills</span><input id="skillSearch" type="search" placeholder="Type a skill name or ID" autocomplete="off" /></label>
+        <p id="skillResultCount" class="skill-result-count"></p>
+        <div id="skillChoices" class="skill-choices" role="listbox" aria-label="Known Persona skills"></div>
+      </div>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

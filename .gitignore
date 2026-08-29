@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local development and reverse-engineering tools.
+tests/
+test_*.py
+p3r_save_editor.py
+scripts/
+ITEM IDS.txt
+
+# Never commit or publish personal game saves.
+Save files/
+Edited Save files/
+*.sav
+
+# Local previews and generated deployment output.
+browser-tests.png
+ui-preview.png
+_site/
