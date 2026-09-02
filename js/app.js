@@ -1,5 +1,5 @@
 import { bytesEqual } from "./binary.js";
-import { ITEM_CATEGORIES, MAX_PLAY_TIME_SECONDS } from "./constants.js";
+import { ITEM_CATEGORIES, MAX_PLAY_TIME_SECONDS, NAVIGATOR_SKILLS } from "./constants.js";
 import {
   getCoreValues,
   getParty,
@@ -11,6 +11,7 @@ import {
 } from "./core-values.js";
 import { P3RSave } from "./gvas-save.js";
 import { getItemQuantity, setItemQuantity } from "./inventory.js";
+import { getPartyPersonas, setPartyPersonaSkill } from "./party-personas.js";
 import {
   clearPersona,
   getPersonaStock,
@@ -27,6 +28,7 @@ const state = {
   items: [],
   personas: [],
   skills: [],
+  partySkills: [],
   personaById: new Map(),
   skillNames: new Map(),
   originalRaw: null,
@@ -213,18 +215,31 @@ function renderInventory() {
   elements.itemNext.disabled = state.itemPage >= pages;
 }
 
-function renderParty() {
-  elements.partyGrid.innerHTML = getParty(state.save).map((member) => `
-    <article class="party-card">
-      <h3>${escapeHtml(member.name)}</h3>
-      <div class="party-fields">
-        ${partyInput(member, "hp", "HP", 0, 9999)}
-        ${partyInput(member, "sp", "SP", 0, 9999)}
-        ${partyInput(member, "level", "Level", 1, 99)}
-        ${partyInput(member, "experience", "Experience", 0, 9999999)}
-      </div>
-    </article>
-  `).join("");
+function renderParty(openSkillEditor = null) {
+  const partyPersonas = new Map(
+    getPartyPersonas(state.save).map((persona) => [persona.memberKey, persona]),
+  );
+  elements.partyGrid.innerHTML = getParty(state.save).map((member) => {
+    const partyPersona = partyPersonas.get(member.key);
+    return `
+      <article class="party-card">
+        <h3>${escapeHtml(member.name)}</h3>
+        <div class="party-fields">
+          ${partyInput(member, "hp", "HP", 0, 9999)}
+          ${partyInput(member, "sp", "SP", 0, 9999)}
+          ${partyInput(member, "level", "Level", 1, 99)}
+          ${partyInput(member, "experience", "Experience", 0, 9999999)}
+        </div>
+        ${partyPersona?.id ? `
+          <details class="persona-skill-editor" ${member.key === openSkillEditor ? "open" : ""}>
+            <summary>Edit Persona skills</summary>
+            <p>Choose a known skill, or clear the slot.</p>
+            <div class="persona-skill-grid">
+              ${partyPersona.skillSlots.map((skillId, skillSlot) => `<label><span>Skill ${skillSlot + 1}</span><button class="skill-picker-button" type="button" data-party-skill-member="${member.key}" data-open-party-skill-picker="${skillSlot}">${escapeHtml(skillId ? (state.skillNames.get(skillId) || `Unknown skill ${skillId}`) : "Empty")}</button></label>`).join("")}
+            </div>
+          </details>` : ""}
+      </article>`;
+  }).join("");
 }
 
 function partyInput(member, field, label, min, max) {
@@ -274,16 +289,16 @@ function renderPersonas(openSkillEditor = null) {
 }
 
 function renderSkillChoices() {
-  if (!state.skillPicker) return;
+  const context = getSkillPickerContext();
+  if (!context) return;
   const query = elements.skillSearch.value.trim().toLowerCase();
-  const matches = state.skills.filter((skill) => (
+  const matches = context.availableSkills.filter((skill) => (
     !query
     || skill.name.toLowerCase().includes(query)
     || String(skill.id).includes(query)
   ));
   const visible = matches.slice(0, 100);
-  const currentId = getPersonaStock(state.save)[state.skillPicker.personaSlot]
-    .skillSlots[state.skillPicker.skillSlot];
+  const { currentId } = context;
   elements.skillResultCount.textContent = matches.length > visible.length
     ? `Showing the first ${visible.length} of ${matches.length} matches`
     : `${matches.length} ${matches.length === 1 ? "match" : "matches"}`;
@@ -293,11 +308,48 @@ function renderSkillChoices() {
   ].join("");
 }
 
-function openSkillPicker(personaSlot, skillSlot) {
+function getSkillPickerContext() {
+  if (!state.skillPicker) return null;
+  const { owner, skillSlot } = state.skillPicker;
+  if (owner === "party") {
+    const partyPersona = getPartyPersonas(state.save).find(
+      (persona) => persona.memberKey === state.skillPicker.memberKey,
+    );
+    if (!partyPersona?.id) return null;
+    return {
+      availableSkills: state.partySkills,
+      currentId: partyPersona.skillSlots[skillSlot],
+      partyPersona,
+    };
+  }
+
+  const stock = getPersonaStock(state.save)[state.skillPicker.personaSlot];
+  if (!stock?.id) return null;
+  return {
+    availableSkills: state.skills,
+    currentId: stock.skillSlots[skillSlot],
+    stock,
+  };
+}
+
+function openPersonaSkillPicker(personaSlot, skillSlot) {
   const stock = getPersonaStock(state.save)[personaSlot];
   if (!stock?.id) return;
-  state.skillPicker = { personaSlot, skillSlot };
+  state.skillPicker = { owner: "protagonist", personaSlot, skillSlot };
   elements.skillDialogTitle.textContent = `${personaName(stock.id)} - skill ${skillSlot + 1}`;
+  elements.skillSearch.value = "";
+  renderSkillChoices();
+  elements.skillDialog.showModal();
+  elements.skillSearch.focus();
+}
+
+function openPartySkillPicker(memberKey, skillSlot) {
+  const partyPersona = getPartyPersonas(state.save).find(
+    (persona) => persona.memberKey === memberKey,
+  );
+  if (!partyPersona?.id) return;
+  state.skillPicker = { owner: "party", memberKey, skillSlot };
+  elements.skillDialogTitle.textContent = `${partyPersona.memberName}'s Persona - skill ${skillSlot + 1}`;
   elements.skillSearch.value = "";
   renderSkillChoices();
   elements.skillDialog.showModal();
@@ -536,7 +588,18 @@ function bindEditorEvents() {
   elements.editor.addEventListener("click", (event) => {
     const skillButton = event.target.closest("[data-open-skill-picker]");
     if (skillButton) {
-      openSkillPicker(Number(skillButton.dataset.personaSlot), Number(skillButton.dataset.openSkillPicker));
+      openPersonaSkillPicker(
+        Number(skillButton.dataset.personaSlot),
+        Number(skillButton.dataset.openSkillPicker),
+      );
+      return;
+    }
+    const partySkillButton = event.target.closest("[data-open-party-skill-picker]");
+    if (partySkillButton) {
+      openPartySkillPicker(
+        partySkillButton.dataset.partySkillMember,
+        Number(partySkillButton.dataset.openPartySkillPicker),
+      );
       return;
     }
     const button = event.target.closest("[data-remove-persona]");
@@ -568,22 +631,36 @@ function bindToolbarEvents() {
   elements.skillChoices.addEventListener("click", (event) => {
     const choice = event.target.closest("[data-skill-choice]");
     if (!choice || !state.skillPicker) return;
-    const { personaSlot, skillSlot } = state.skillPicker;
-    const beforeId = getPersonaStock(state.save)[personaSlot].skillSlots[skillSlot];
+    const picker = state.skillPicker;
+    const context = getSkillPickerContext();
+    if (!context) return;
+    const { skillSlot } = picker;
+    const beforeId = context.currentId;
     const afterId = Number(choice.dataset.skillChoice);
     try {
-      if (afterId !== 0 && !state.skillNames.has(afterId)) {
+      if (afterId !== 0 && !context.availableSkills.some((skill) => skill.id === afterId)) {
         throw new Error("Choose a skill from the known-skill list.");
       }
-      setPersonaSkill(state.save, personaSlot, skillSlot, afterId);
-      markChange(
-        `persona:${personaSlot}:skill:${skillSlot}`,
-        `Slot ${personaSlot + 1} skill ${skillSlot + 1}`,
-        beforeId ? skillLabel(beforeId) : "Empty",
-        afterId ? skillLabel(afterId) : "Empty",
-      );
+      if (picker.owner === "party") {
+        setPartyPersonaSkill(state.save, picker.memberKey, skillSlot, afterId);
+        markChange(
+          `party:${picker.memberKey}:persona-skill:${skillSlot}`,
+          `${context.partyPersona.memberName} Persona skill ${skillSlot + 1}`,
+          beforeId ? skillLabel(beforeId) : "Empty",
+          afterId ? skillLabel(afterId) : "Empty",
+        );
+      } else {
+        setPersonaSkill(state.save, picker.personaSlot, skillSlot, afterId);
+        markChange(
+          `persona:${picker.personaSlot}:skill:${skillSlot}`,
+          `Slot ${picker.personaSlot + 1} skill ${skillSlot + 1}`,
+          beforeId ? skillLabel(beforeId) : "Empty",
+          afterId ? skillLabel(afterId) : "Empty",
+        );
+      }
       elements.skillDialog.close();
-      renderPersonas(personaSlot);
+      if (picker.owner === "party") renderParty(picker.memberKey);
+      else renderPersonas(picker.personaSlot);
     } catch (error) {
       showToast(error.message || String(error), true);
     }
@@ -603,9 +680,11 @@ async function initialize() {
     state.items = await itemsResponse.json();
     state.personas = await personasResponse.json();
     state.skills = await skillsResponse.json();
+    state.partySkills = [...state.skills, ...NAVIGATOR_SKILLS];
     state.personaById = new Map(state.personas.map((persona) => [persona.id, persona]));
-    state.skillNames = new Map(state.skills.map((skill) => [skill.id, skill.name]));
+    state.skillNames = new Map(state.partySkills.map((skill) => [skill.id, skill.name]));
     state.skills.sort((left, right) => left.name.localeCompare(right.name));
+    state.partySkills.sort((left, right) => left.name.localeCompare(right.name));
     Object.entries(ITEM_CATEGORIES).forEach(([id, category]) => {
       const option = document.createElement("option");
       option.value = id;

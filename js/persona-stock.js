@@ -4,6 +4,7 @@ import {
   PERSONA_STOCK_BASE,
 } from "./constants.js";
 import { versionedIndex } from "./core-values.js";
+import { readPersonaSkillSlots, writePersonaSkillSlot } from "./persona-skills.js";
 
 function slotBase(save, slot) {
   if (!Number.isInteger(slot) || slot < 0 || slot >= PERSONA_SLOT_COUNT) {
@@ -21,13 +22,7 @@ export function getPersonaStock(save) {
     const base = slotBase(save, slot);
     const identity = save.getWord(base);
     const stats = wordBytes(save.getWord(base + 7));
-    const skillSlots = [];
-    for (let index = 0; index < 4; index += 1) {
-      const word = save.getWord(base + 3 + index);
-      const low = word & 0xffff;
-      const high = (word >>> 16) & 0xffff;
-      skillSlots.push(low, high);
-    }
+    const skillSlots = readPersonaSkillSlots(save, base);
     return {
       slot,
       flags: identity & 0xffff,
@@ -111,23 +106,5 @@ export function setPersonaSkill(save, slot, skillSlot, skillId) {
   const base = slotBase(save, slot);
   const current = getPersonaStock(save)[slot];
   if (!current.id) throw new Error("Add a Persona to this slot first.");
-  if (!Number.isInteger(skillSlot) || skillSlot < 0 || skillSlot >= 8) {
-    throw new Error("Persona skill slot must be between 1 and 8.");
-  }
-  if (!Number.isInteger(skillId) || skillId < 0 || skillId > 0xffff) {
-    throw new Error("This Persona skill is not supported.");
-  }
-  const duplicate = current.skillSlots.findIndex(
-    (existingId, index) => index !== skillSlot && existingId === skillId && skillId !== 0,
-  );
-  if (duplicate >= 0) {
-    throw new Error(`That skill is already in skill slot ${duplicate + 1}.`);
-  }
-
-  const wordIndex = base + 3 + Math.floor(skillSlot / 2);
-  const oldWord = save.getWord(wordIndex);
-  const updated = skillSlot % 2 === 0
-    ? (oldWord & 0xffff0000) | skillId
-    : (oldWord & 0x0000ffff) | (skillId << 16);
-  save.setWord(wordIndex, updated >>> 0);
+  writePersonaSkillSlot(save, base, current.skillSlots, skillSlot, skillId);
 }

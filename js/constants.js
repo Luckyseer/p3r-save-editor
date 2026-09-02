@@ -105,6 +105,21 @@ export const SOCIAL_LINKS = Object.freeze([
   { label: "Aigis", arcana: "Aeon", index: 5342 },
 ]);
 
+export const PERSONA_STOCK_BASE = 13086;
+export const PERSONA_SLOT_WORDS = 12;
+export const PERSONA_SLOT_COUNT = 12;
+
+// Navigator abilities are valid party-Persona skills but cannot normally be
+// equipped by the protagonist, so they are kept separate from skills.json.
+export const NAVIGATOR_SKILLS = Object.freeze([
+  { id: 245, name: "Full Analysis" },
+  { id: 246, name: "Escape Route" },
+  { id: 247, name: "Jamming" },
+  { id: 248, name: "Tartarus Search" },
+  { id: 249, name: "Sylphid Aura" },
+  { id: 250, name: "Shock Noise" },
+]);
+
 const supportingParty = [
   "Yukari",
   "Junpei",
@@ -125,6 +140,7 @@ export const PARTY_MEMBERS = Object.freeze([
     sp: 13071,
     level: 13074,
     experience: 13075,
+    personaBase: PERSONA_STOCK_BASE,
   },
   ...supportingParty.map((name, offset) => {
     const hp = 13246 + offset * 176;
@@ -135,10 +151,7 @@ export const PARTY_MEMBERS = Object.freeze([
       sp: hp + 1,
       level: hp + 17,
       experience: hp + 18,
+      personaBase: hp + 16,
     };
   }),
 ]);
-
-export const PERSONA_STOCK_BASE = 13086;
-export const PERSONA_SLOT_WORDS = 12;
-export const PERSONA_SLOT_COUNT = 12;

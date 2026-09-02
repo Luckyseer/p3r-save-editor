@@ -47,15 +47,17 @@ and test them before editing more.
 
 - Inventory quantities, with item search and category filters
 - Yen and play time
-- Party HP, SP, level, and experience
+- Party HP, SP, level, experience, and Persona skills
 - The protagonist's 12 carried Persona slots
 - Persona level, experience, stats, and skills
 - Social stat point totals, with in-game level references
 - Social Link ranks
 
-Persona skills are selected from a searchable known-skill list. The Persona
-screen edits the Personas currently being carried; it does not edit Velvet Room
-Compendium registrations.
+Persona skills are selected from a searchable known-skill list. Party skill
+editing includes Fuuka's navigator abilities, but unusual combinations may not
+work correctly and can be replaced by later level-ups. The Persona screen edits
+the Personas currently being carried; it does not edit Velvet Room Compendium
+registrations.
 
 ## Supported files
 
