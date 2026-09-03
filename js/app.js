@@ -1,5 +1,10 @@
 import { bytesEqual } from "./binary.js";
-import { ITEM_CATEGORIES, MAX_PLAY_TIME_SECONDS, NAVIGATOR_SKILLS } from "./constants.js";
+import {
+  ITEM_CATEGORIES,
+  MAX_PLAY_TIME_SECONDS,
+  MUTATION_SKILLS,
+  NAVIGATOR_SKILLS,
+} from "./constants.js";
 import {
   getCoreValues,
   getParty,
@@ -142,6 +147,12 @@ function personaName(personaId) {
 function skillLabel(skillId) {
   if (!skillId) return "";
   return `${state.skillNames.get(skillId) || `Unknown Skill`} [${skillId}]`;
+}
+
+function mergeSkills(...lists) {
+  return [...new Map(
+    lists.flat().map((skill) => [skill.id, skill]),
+  ).values()];
 }
 
 function renderOverview() {
@@ -679,8 +690,8 @@ async function initialize() {
     }
     state.items = await itemsResponse.json();
     state.personas = await personasResponse.json();
-    state.skills = await skillsResponse.json();
-    state.partySkills = [...state.skills, ...NAVIGATOR_SKILLS];
+    state.skills = mergeSkills(await skillsResponse.json(), MUTATION_SKILLS);
+    state.partySkills = mergeSkills(state.skills, NAVIGATOR_SKILLS);
     state.personaById = new Map(state.personas.map((persona) => [persona.id, persona]));
     state.skillNames = new Map(state.partySkills.map((skill) => [skill.id, skill.name]));
     state.skills.sort((left, right) => left.name.localeCompare(right.name));

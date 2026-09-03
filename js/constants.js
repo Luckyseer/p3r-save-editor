@@ -109,6 +109,13 @@ export const PERSONA_STOCK_BASE = 13086;
 export const PERSONA_SLOT_WORDS = 12;
 export const PERSONA_SLOT_COUNT = 12;
 
+// These are valid protagonist-Persona skills produced by fusion mutation, but
+// no Persona learns them naturally, so the generated skills.json omits them.
+export const MUTATION_SKILLS = Object.freeze([
+  { id: 864, name: "Almighty Amp" },
+  { id: 866, name: "Magic Mastery" },
+]);
+
 // Navigator abilities are valid party-Persona skills but cannot normally be
 // equipped by the protagonist, so they are kept separate from skills.json.
 export const NAVIGATOR_SKILLS = Object.freeze([
