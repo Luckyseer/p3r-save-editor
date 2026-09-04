@@ -48,7 +48,7 @@ and test them before editing more.
 - Inventory quantities, with item search and category filters
 - Protagonist first and last name
 - Yen and play time
-- Current combat formation, including experimental post-departure Shinjiro selection
+- Current combat formation, including post-departure Shinjiro selection
 - Party HP, SP, level, experience, and Persona skills
 - The protagonist's 12 carried Persona slots
 - Persona level, experience, stats, and skills
@@ -63,8 +63,8 @@ registrations.
 
 Current-party editing always keeps the protagonist as leader, allows at most
 three unique combat allies, and excludes Fuuka because she is the navigator.
-Adding Shinjiro after his story departure is experimental: transitions or
-scripted scenes may remove him or behave incorrectly.
+Selecting Shinjiro shows a warning because transitions or scripted scenes may
+remove him or behave incorrectly after his story departure.
 
 ## Supported files
 

@@ -250,8 +250,7 @@ function partyFormationOptions(selectedKey, selectedKeys) {
   getCombatAllies().forEach((member) => {
     const selected = member.key === selectedKey;
     const usedElsewhere = !selected && selectedKeys.includes(member.key);
-    const label = `${member.name}${member.experimental ? " (experimental)" : ""}`;
-    options.push(`<option value="${member.key}" ${selected ? "selected" : ""} ${usedElsewhere ? "disabled" : ""}>${escapeHtml(label)}</option>`);
+    options.push(`<option value="${member.key}" ${selected ? "selected" : ""} ${usedElsewhere ? "disabled" : ""}>${escapeHtml(member.name)}</option>`);
   });
   return options.join("");
 }
@@ -269,9 +268,9 @@ function renderPartyFormation() {
   const selectedKeys = formation.slice(1).map((member) => member.key);
   const slots = Array.from({ length: 3 }, (_, index) => selectedKeys[index] || "");
   elements.partyFormation.innerHTML = `
-    <label><span>Leader</span><span class="fixed-member">Protagonist</span></label>
+    <label class="party-formation-field"><span>Leader</span><span class="fixed-member">Protagonist</span></label>
     ${slots.map((selectedKey, index) => `
-      <label><span>Ally ${index + 1}</span><select data-party-formation-slot="${index}">${partyFormationOptions(selectedKey, selectedKeys)}</select></label>
+      <label class="party-formation-field"><span>Ally ${index + 1}</span><select data-party-formation-slot="${index}">${partyFormationOptions(selectedKey, selectedKeys)}</select></label>
     `).join("")}
   `;
 }
@@ -600,7 +599,7 @@ function bindEditorEvents() {
       if (
         selectedAllies.includes("shinjiro")
         && !beforeAllies.includes("shinjiro")
-        && !window.confirm("Adding Shinjiro after his story departure is experimental. The game may remove him or behave incorrectly during transitions and scripted scenes. Continue?")
+        && !window.confirm("Shinjiro can be added after his story departure, but the game may remove him during transitions or behave incorrectly in scripted scenes. Continue?")
       ) {
         renderPartyFormation();
         return;

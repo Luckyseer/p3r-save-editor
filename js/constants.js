@@ -152,7 +152,7 @@ const supportingParty = [
   { name: "Aigis", id: 7 },
   { name: "Koromaru", id: 8 },
   { name: "Ken", id: 9 },
-  { name: "Shinjiro", id: 10, experimental: true },
+  { name: "Shinjiro", id: 10 },
 ];
 
 export const PARTY_MEMBERS = Object.freeze([

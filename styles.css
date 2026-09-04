@@ -137,11 +137,12 @@ input[type="checkbox"] { accent-color: var(--cyan); width: 17px; height: 17px; }
 .info-callout { border-left: 3px solid var(--cyan); background: rgba(36,216,255,.07); color: #c0ceed; padding: 13px 16px; font-size: .76rem; line-height: 1.55; margin-bottom: 18px; }
 .info-callout.warning { border-color: var(--warning); background: rgba(255,202,82,.07); }
 .info-callout.danger { border-color: var(--danger); background: rgba(255,66,109,.09); }
-.party-formation-card { margin-bottom: 18px; padding: 18px; }
-.party-formation-card > p { color: var(--muted); font-size: .74rem; line-height: 1.55; margin: 0 0 14px; }
-.party-formation { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; }
-.party-formation .fixed-member { display: grid; align-content: center; min-height: 43px; border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; background: rgba(1,8,48,.55); color: #dce6ff; font-size: .75rem; font-weight: 750; }
-.experimental-note { display: block; margin-top: 13px; color: #efcf81; line-height: 1.5; }
+.party-formation-card { margin-bottom: 18px; padding: 18px; overflow: hidden; }
+.party-formation-card > p { color: var(--muted); font-size: .74rem; line-height: 1.55; margin: 0 0 16px; }
+.party-formation-card .party-formation { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; align-items: end; }
+.party-formation-field { display: block; min-width: 0; }
+.party-formation-field .fixed-member { display: flex; align-items: center; width: 100%; min-height: 43px; box-sizing: border-box; margin: 0; border: 1px solid var(--line); border-radius: 8px; padding: 9px 12px; background: rgba(1,8,48,.55); color: #dce6ff; font-size: .75rem; font-weight: 750; text-transform: none; letter-spacing: normal; }
+.party-formation-field select { display: block; min-width: 0; }
 .party-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
 .party-card { background: linear-gradient(145deg, rgba(11,44,155,.66), rgba(6,18,81,.82)); border: 1px solid var(--line); border-radius: 13px; padding: 18px; }
 .party-card h3 { text-transform: uppercase; letter-spacing: -.02em; }
@@ -214,7 +215,7 @@ input[type="checkbox"] { accent-color: var(--cyan); width: 17px; height: 17px; }
   .nav-item { flex: 0 0 auto; }
   .export-bar { left: 0; }
   .overview-grid { grid-template-columns: repeat(2,1fr); }
-  .party-formation { grid-template-columns: repeat(2,1fr); }
+  .party-formation-card .party-formation { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 @media (max-width: 720px) {
   .shell, .site-header { width: min(100% - 24px,1180px); }
@@ -223,7 +224,8 @@ input[type="checkbox"] { accent-color: var(--cyan); width: 17px; height: 17px; }
   .editor-shell { width: 100%; margin-top: 0; border-radius: 0; border-inline: 0; }
   .editor-main { padding: 28px 14px 190px; }
   .section-heading { align-items: start; }
-  .overview-grid, .two-columns, .party-formation, .party-grid, .persona-grid, .social-layout { grid-template-columns: 1fr; }
+  .overview-grid, .two-columns, .party-grid, .persona-grid, .social-layout { grid-template-columns: 1fr; }
+  .party-formation-card .party-formation { grid-template-columns: 1fr; }
   .skill-choices { grid-template-columns: 1fr; }
   .toolbar { align-items: stretch; flex-direction: column; }
   .toolbar label { width: 100%; }
