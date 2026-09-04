@@ -36,6 +36,13 @@ export const CORE_FIELDS = Object.freeze({
   playTime: { label: "Play time", index: 12832, min: 0, max: MAX_PLAY_TIME_SECONDS },
 });
 
+export const PLAYER_NAME_MAX_LENGTH = 8;
+export const PLAYER_NAME_WORD_COUNT = 2;
+export const PLAYER_NAME_FIELDS = Object.freeze({
+  firstName: { label: "First name", headerName: "FirstName", index: 17936 },
+  lastName: { label: "Last name", headerName: "LastName", index: 17952 },
+});
+
 // Cumulative thresholds from Xrd777's HeroParameterDataAsset. The source
 // table stores the additional points required for each successive level.
 export const SOCIAL_STATS = Object.freeze([

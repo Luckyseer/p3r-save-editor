@@ -176,23 +176,57 @@ export class P3RSave {
   }
 
   readHeaderByteString(name) {
+    return this.findHeaderByteProperties(name)
+      .sort((left, right) => left.arrayIndex - right.arrayIndex)
+      .map(({ valueOffset }) => String.fromCharCode(this.bytes[valueOffset]))
+      .join("");
+  }
+
+  findHeaderByteProperties(name) {
     const prefix = propertyPrefix(name, "Int8Property", 1);
-    const characters = new Map();
+    const properties = [];
+    const headerEnd = this.records[0]?.offset ?? this.bytes.length;
     let searchFrom = 0;
     while (true) {
       const offset = findBytes(this.bytes, prefix, searchFrom);
-      if (offset < 0 || offset > this.records[0].offset) break;
+      if (offset < 0 || offset >= headerEnd) break;
       const indexOffset = offset + prefix.length;
       const valueOffset = indexOffset + 5;
-      if (this.bytes[indexOffset + 4] === 0) {
-        characters.set(readUint32(this.bytes, indexOffset), this.bytes[valueOffset]);
+      if (valueOffset < headerEnd && this.bytes[indexOffset + 4] === 0) {
+        properties.push({
+          offset,
+          arrayIndex: readUint32(this.bytes, indexOffset),
+          valueOffset,
+          endOffset: valueOffset + 1,
+        });
       }
       searchFrom = offset + 1;
     }
-    return [...characters.entries()]
-      .sort(([left], [right]) => left - right)
-      .map(([, value]) => String.fromCharCode(value))
-      .join("");
+    return properties;
+  }
+
+  writeHeaderByteString(name, value) {
+    const properties = this.findHeaderByteProperties(name);
+    if (!properties.length) throw new Error(`Header property ${name} was not found.`);
+    for (let index = 0; index < properties.length; index += 1) {
+      if (properties[index].arrayIndex !== index) {
+        throw new Error(`Header property ${name} uses an unsupported character layout.`);
+      }
+      if (index > 0 && properties[index - 1].endOffset !== properties[index].offset) {
+        throw new Error(`Header property ${name} is not stored contiguously.`);
+      }
+    }
+
+    const prefix = propertyPrefix(name, "Int8Property", 1);
+    const replacement = concatBytes(...[...value].map((character, index) => concatBytes(
+      prefix,
+      uint32Bytes(index),
+      Uint8Array.of(0, character.charCodeAt(0)),
+    )));
+    const start = properties[0].offset;
+    const end = properties.at(-1).endOffset;
+    this.bytes = concatBytes(this.bytes.slice(0, start), replacement, this.bytes.slice(end));
+    this.reindex();
   }
 
   getHeader() {

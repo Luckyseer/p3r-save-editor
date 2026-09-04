@@ -4,6 +4,7 @@ import {
   MAX_PLAY_TIME_SECONDS,
   MUTATION_SKILLS,
   NAVIGATOR_SKILLS,
+  PLAYER_NAME_MAX_LENGTH,
 } from "./constants.js";
 import {
   getCoreValues,
@@ -11,6 +12,7 @@ import {
   getSocialData,
   setCoreValue,
   setPartyValue,
+  setPlayerName,
   setSocialLinkRank,
   setSocialStat,
 } from "./core-values.js";
@@ -172,6 +174,8 @@ function renderOverview() {
     <div class="metric-card"><span>${escapeHtml(label)}</span><strong title="${escapeHtml(value)}">${escapeHtml(value)}</strong><small>${escapeHtml(detail)}</small></div>
   `).join("");
   elements.coreFields.innerHTML = `
+    <div class="field"><label><span>First name</span><input type="text" maxlength="${PLAYER_NAME_MAX_LENGTH}" value="${escapeHtml(header.firstName)}" data-player-name="firstName" /></label><small>1 to ${PLAYER_NAME_MAX_LENGTH} basic characters</small></div>
+    <div class="field"><label><span>Last name</span><input type="text" maxlength="${PLAYER_NAME_MAX_LENGTH}" value="${escapeHtml(header.lastName)}" data-player-name="lastName" /></label><small>1 to ${PLAYER_NAME_MAX_LENGTH} basic characters</small></div>
     <div class="field"><label><span>Yen</span><input type="number" min="0" max="9999999" step="1" value="${core.money}" data-core="money" /></label><small>0 to 9,999,999</small></div>
     <div class="field">
       <span class="field-group-label">Play time</span>
@@ -505,6 +509,14 @@ function bindEditorEvents() {
         setItemQuantity(state.save, id, after);
         markChange(`item:${id}`, `${itemName(id)} quantity`, before, after);
       }, renderInventory);
+    } else if (target.matches("[data-player-name]")) {
+      const key = target.dataset.playerName;
+      editSafely(() => {
+        const before = state.save.getHeader()[key];
+        const after = target.value;
+        setPlayerName(state.save, key, after);
+        markChange(`name:${key}`, key === "firstName" ? "First name" : "Last name", before, after);
+      }, renderOverview);
     } else if (target.matches("[data-playtime-part]")) {
       editSafely(() => {
         const before = getCoreValues(state.save).playTime;

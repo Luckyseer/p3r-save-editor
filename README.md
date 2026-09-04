@@ -46,6 +46,7 @@ and test them before editing more.
 ## Available editing
 
 - Inventory quantities, with item search and category filters
+- Protagonist first and last name
 - Yen and play time
 - Party HP, SP, level, experience, and Persona skills
 - The protagonist's 12 carried Persona slots

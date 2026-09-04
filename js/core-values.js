@@ -1,6 +1,9 @@
 import {
   CORE_FIELDS,
   PARTY_MEMBERS,
+  PLAYER_NAME_FIELDS,
+  PLAYER_NAME_MAX_LENGTH,
+  PLAYER_NAME_WORD_COUNT,
   PLAY_TIME_TICKS_PER_SECOND,
   SOCIAL_LINKS,
   SOCIAL_STATS,
@@ -32,6 +35,33 @@ export function setCoreValue(save, key, value) {
   const storedValue = key === "playTime" ? value * PLAY_TIME_TICKS_PER_SECOND : value;
   save.setWord(versionedIndex(save, field.index), storedValue);
   if (key === "playTime") save.writeHeaderNumber("PlayTime", storedValue);
+}
+
+export function setPlayerName(save, key, value) {
+  const field = PLAYER_NAME_FIELDS[key];
+  if (!field) throw new Error("Unknown protagonist name field.");
+  if (typeof value !== "string" || value.length < 1 || value.length > PLAYER_NAME_MAX_LENGTH) {
+    throw new Error(`${field.label} must contain 1 to ${PLAYER_NAME_MAX_LENGTH} characters.`);
+  }
+  if ([...value].some((character) => {
+    const code = character.charCodeAt(0);
+    return code < 0x20 || code > 0x7e;
+  })) {
+    throw new Error(`${field.label} can only use basic English letters, numbers, spaces, and punctuation.`);
+  }
+  if (!value.trim()) throw new Error(`${field.label} cannot be blank.`);
+
+  save.writeHeaderByteString(field.headerName, value);
+  for (let wordIndex = 0; wordIndex < PLAYER_NAME_WORD_COUNT; wordIndex += 1) {
+    let packed = 0;
+    for (let byteIndex = 0; byteIndex < 4; byteIndex += 1) {
+      const characterIndex = (wordIndex * 4) + byteIndex;
+      if (characterIndex < value.length) {
+        packed |= value.charCodeAt(characterIndex) << (byteIndex * 8);
+      }
+    }
+    save.setWord(versionedIndex(save, field.index + wordIndex), packed >>> 0);
+  }
 }
 
 export function getParty(save) {
