@@ -1,9 +1,10 @@
 import {
   CORE_FIELDS,
   PARTY_MEMBERS,
+  PLAYER_FULL_NAME_INDEX,
+  PLAYER_NAME_BUFFER_WORD_COUNT,
   PLAYER_NAME_FIELDS,
   PLAYER_NAME_MAX_LENGTH,
-  PLAYER_NAME_WORD_COUNT,
   PLAY_TIME_TICKS_PER_SECOND,
   SOCIAL_LINKS,
   SOCIAL_STATS,
@@ -37,6 +38,22 @@ export function setCoreValue(save, key, value) {
   if (key === "playTime") save.writeHeaderNumber("PlayTime", storedValue);
 }
 
+function writePlayerNameBuffer(save, versionOneIndex, value) {
+  if (value.length >= PLAYER_NAME_BUFFER_WORD_COUNT * 4) {
+    throw new Error("The combined protagonist name is too long for the save format.");
+  }
+  for (let wordIndex = 0; wordIndex < PLAYER_NAME_BUFFER_WORD_COUNT; wordIndex += 1) {
+    let packed = 0;
+    for (let byteIndex = 0; byteIndex < 4; byteIndex += 1) {
+      const characterIndex = (wordIndex * 4) + byteIndex;
+      if (characterIndex < value.length) {
+        packed |= value.charCodeAt(characterIndex) << (byteIndex * 8);
+      }
+    }
+    save.setWord(versionedIndex(save, versionOneIndex + wordIndex), packed >>> 0);
+  }
+}
+
 export function setPlayerName(save, key, value) {
   const field = PLAYER_NAME_FIELDS[key];
   if (!field) throw new Error("Unknown protagonist name field.");
@@ -51,17 +68,16 @@ export function setPlayerName(save, key, value) {
   }
   if (!value.trim()) throw new Error(`${field.label} cannot be blank.`);
 
+  const names = save.getHeader();
+  names[key] = value;
   save.writeHeaderByteString(field.headerName, value);
-  for (let wordIndex = 0; wordIndex < PLAYER_NAME_WORD_COUNT; wordIndex += 1) {
-    let packed = 0;
-    for (let byteIndex = 0; byteIndex < 4; byteIndex += 1) {
-      const characterIndex = (wordIndex * 4) + byteIndex;
-      if (characterIndex < value.length) {
-        packed |= value.charCodeAt(characterIndex) << (byteIndex * 8);
-      }
-    }
-    save.setWord(versionedIndex(save, field.index + wordIndex), packed >>> 0);
-  }
+  writePlayerNameBuffer(save, PLAYER_NAME_FIELDS.firstName.index, names.firstName);
+  writePlayerNameBuffer(save, PLAYER_NAME_FIELDS.lastName.index, names.lastName);
+  writePlayerNameBuffer(
+    save,
+    PLAYER_FULL_NAME_INDEX,
+    [names.firstName, names.lastName].filter(Boolean).join(" "),
+  );
 }
 
 export function getParty(save) {

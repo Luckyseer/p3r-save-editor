@@ -462,6 +462,7 @@ async function downloadEditedSave() {
     const encoded = encodeSave(state.save.bytes, state.format);
     const decoded = decodeSave(encoded, state.format);
     const validated = new P3RSave(decoded.decrypted);
+    validated.validateHeaderContainer();
     if (validated.version !== state.save.version || !bytesEqual(decoded.decrypted, state.save.bytes)) {
       throw new Error("Final encryption and parse validation failed; nothing was downloaded.");
     }

@@ -182,6 +182,43 @@ export class P3RSave {
       .join("");
   }
 
+  findStructProperty(name) {
+    const prefix = concatBytes(fstring(name), fstring("StructProperty"));
+    const offset = findBytes(this.bytes, prefix);
+    if (offset < 0) return null;
+    const sizeOffset = offset + prefix.length;
+    if (sizeOffset + 8 > this.bytes.length) return null;
+
+    try {
+      const size = readUint32(this.bytes, sizeOffset);
+      const structType = readFString(this.bytes, sizeOffset + 8);
+      const structIdOffset = structType.nextOffset;
+      const guidMarkerOffset = structIdOffset + 16;
+      const hasPropertyGuid = this.bytes[guidMarkerOffset];
+      if (hasPropertyGuid !== 0 && hasPropertyGuid !== 1) return null;
+      const payloadOffset = guidMarkerOffset + 1 + (hasPropertyGuid ? 16 : 0);
+      if (payloadOffset + size > this.bytes.length) return null;
+      return {
+        offset,
+        sizeOffset,
+        size,
+        structType: structType.value,
+        payloadOffset,
+        declaredEnd: payloadOffset + size,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  validateHeaderContainer() {
+    const container = this.findStructProperty("SaveDataHeadder");
+    if (!container) throw new Error("The save header container was not found.");
+    if (container.declaredEnd !== this.records[0].offset) {
+      throw new Error("The save header length does not match its contents.");
+    }
+  }
+
   findHeaderByteProperties(name) {
     const prefix = propertyPrefix(name, "Int8Property", 1);
     const properties = [];
@@ -206,6 +243,8 @@ export class P3RSave {
   }
 
   writeHeaderByteString(name, value) {
+    const container = this.findStructProperty("SaveDataHeadder");
+    if (!container) throw new Error("The save header container was not found.");
     const properties = this.findHeaderByteProperties(name);
     if (!properties.length) throw new Error(`Header property ${name} was not found.`);
     for (let index = 0; index < properties.length; index += 1) {
@@ -225,8 +264,15 @@ export class P3RSave {
     )));
     const start = properties[0].offset;
     const end = properties.at(-1).endOffset;
+    if (start < container.payloadOffset || end > this.records[0].offset) {
+      throw new Error(`Header property ${name} is outside the save header container.`);
+    }
+    const replacementDelta = replacement.length - (end - start);
+    const actualPayloadSize = this.records[0].offset - container.payloadOffset;
     this.bytes = concatBytes(this.bytes.slice(0, start), replacement, this.bytes.slice(end));
+    writeUint32(this.bytes, container.sizeOffset, actualPayloadSize + replacementDelta);
     this.reindex();
+    this.validateHeaderContainer();
   }
 
   getHeader() {

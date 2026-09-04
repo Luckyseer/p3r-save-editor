@@ -37,7 +37,10 @@ export const CORE_FIELDS = Object.freeze({
 });
 
 export const PLAYER_NAME_MAX_LENGTH = 8;
-export const PLAYER_NAME_WORD_COUNT = 2;
+// CharacterName stores fixed 64-byte first-name, last-name, and combined-name
+// buffers. All three must stay synchronized when either visible field changes.
+export const PLAYER_NAME_BUFFER_WORD_COUNT = 16;
+export const PLAYER_FULL_NAME_INDEX = 17968;
 export const PLAYER_NAME_FIELDS = Object.freeze({
   firstName: { label: "First name", headerName: "FirstName", index: 17936 },
   lastName: { label: "Last name", headerName: "LastName", index: 17952 },
