@@ -137,33 +137,40 @@ export const NAVIGATOR_SKILLS = Object.freeze([
   { id: 250, name: "Shock Noise" },
 ]);
 
+// SaveDataArea block 10050_1 stores ten uint16 character IDs. The active
+// combat formation is the protagonist followed by up to three allies.
+export const PARTY_FORMATION_BASE = 5360;
+export const PARTY_FORMATION_WORD_COUNT = 5;
+export const MAX_PARTY_ALLIES = 3;
+
 const supportingParty = [
-  "Yukari",
-  "Junpei",
-  "Akihiko",
-  "Mitsuru",
-  "Fuuka",
-  "Aigis",
-  "Koromaru",
-  "Ken",
-  "Shinjiro",
+  { name: "Yukari", id: 2 },
+  { name: "Junpei", id: 3 },
+  { name: "Akihiko", id: 4 },
+  { name: "Mitsuru", id: 5 },
+  { name: "Fuuka", id: 6, navigator: true },
+  { name: "Aigis", id: 7 },
+  { name: "Koromaru", id: 8 },
+  { name: "Ken", id: 9 },
+  { name: "Shinjiro", id: 10, experimental: true },
 ];
 
 export const PARTY_MEMBERS = Object.freeze([
   {
     key: "protagonist",
     name: "Protagonist",
+    id: 1,
     hp: 13070,
     sp: 13071,
     level: 13074,
     experience: 13075,
     personaBase: PERSONA_STOCK_BASE,
   },
-  ...supportingParty.map((name, offset) => {
+  ...supportingParty.map((definition, offset) => {
     const hp = 13246 + offset * 176;
     return {
-      key: name.toLowerCase(),
-      name,
+      ...definition,
+      key: definition.name.toLowerCase(),
       hp,
       sp: hp + 1,
       level: hp + 17,

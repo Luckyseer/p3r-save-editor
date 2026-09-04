@@ -48,6 +48,7 @@ and test them before editing more.
 - Inventory quantities, with item search and category filters
 - Protagonist first and last name
 - Yen and play time
+- Current combat formation, including experimental post-departure Shinjiro selection
 - Party HP, SP, level, experience, and Persona skills
 - The protagonist's 12 carried Persona slots
 - Persona level, experience, stats, and skills
@@ -59,6 +60,11 @@ editing includes Fuuka's navigator abilities, but unusual combinations may not
 work correctly and can be replaced by later level-ups. The Persona screen edits
 the Personas currently being carried; it does not edit Velvet Room Compendium
 registrations.
+
+Current-party editing always keeps the protagonist as leader, allows at most
+three unique combat allies, and excludes Fuuka because she is the navigator.
+Adding Shinjiro after his story departure is experimental: transitions or
+scripted scenes may remove him or behave incorrectly.
 
 ## Supported files
 

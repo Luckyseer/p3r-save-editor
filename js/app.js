@@ -18,6 +18,11 @@ import {
 } from "./core-values.js";
 import { P3RSave } from "./gvas-save.js";
 import { getItemQuantity, setItemQuantity } from "./inventory.js";
+import {
+  getCombatAllies,
+  getPartyFormation,
+  setPartyFormation,
+} from "./party-formation.js";
 import { getPartyPersonas, setPartyPersonaSkill } from "./party-personas.js";
 import {
   clearPersona,
@@ -53,7 +58,7 @@ const elements = Object.fromEntries(
     "loadedFileName", "loadedFileMeta", "overviewCards", "coreFields", "changeCount",
     "changeList", "itemSearch", "itemCategory", "ownedOnly",
     "showUnused", "inventorySummary", "inventoryRows", "itemPrev", "itemNext",
-    "itemPage", "partyGrid", "personaGrid", "socialStats", "socialLinks",
+    "itemPage", "partyFormation", "partyGrid", "personaGrid", "socialStats", "socialLinks",
     "dirtyDot", "dirtyLabel", "resetChanges", "downloadSave", "safetyDialog", "toast",
     "skillDialog", "skillDialogTitle", "closeSkillDialog", "skillSearch",
     "skillResultCount", "skillChoices",
@@ -228,6 +233,47 @@ function renderInventory() {
   elements.itemPage.textContent = `Page ${state.itemPage} of ${pages} - ${filtered.length.toLocaleString()} results`;
   elements.itemPrev.disabled = state.itemPage <= 1;
   elements.itemNext.disabled = state.itemPage >= pages;
+}
+
+function partyFormationLabel(formation) {
+  return formation.map((member) => member.name).join(", ");
+}
+
+function partyFormationOptions(selectedKey, selectedKeys) {
+  const options = ['<option value="">Empty</option>'];
+  const selectedMember = getPartyFormation(state.save).find(
+    (member) => member.key === selectedKey,
+  );
+  if (selectedMember?.unknown) {
+    options.push(`<option value="${escapeHtml(selectedKey)}" selected>${escapeHtml(selectedMember.name)}</option>`);
+  }
+  getCombatAllies().forEach((member) => {
+    const selected = member.key === selectedKey;
+    const usedElsewhere = !selected && selectedKeys.includes(member.key);
+    const label = `${member.name}${member.experimental ? " (experimental)" : ""}`;
+    options.push(`<option value="${member.key}" ${selected ? "selected" : ""} ${usedElsewhere ? "disabled" : ""}>${escapeHtml(label)}</option>`);
+  });
+  return options.join("");
+}
+
+function renderPartyFormation() {
+  const formation = getPartyFormation(state.save);
+  if (
+    formation[0]?.key !== "protagonist"
+    || formation.length > 4
+    || formation.some((member, index) => member.unknown || (index > 0 && member.navigator))
+  ) {
+    elements.partyFormation.innerHTML = '<div class="empty-state">This save is not in a standard combat-party state, so its formation cannot be edited safely.</div>';
+    return;
+  }
+  const selectedKeys = formation.slice(1).map((member) => member.key);
+  const slots = Array.from({ length: 3 }, (_, index) => selectedKeys[index] || "");
+  elements.partyFormation.innerHTML = `
+    <label><span>Leader</span><span class="fixed-member">Protagonist</span></label>
+    ${slots.map((selectedKey, index) => `
+      <label><span>Ally ${index + 1}</span><select data-party-formation-slot="${index}">${partyFormationOptions(selectedKey, selectedKeys)}</select></label>
+    `).join("")}
+  `;
 }
 
 function renderParty(openSkillEditor = null) {
@@ -407,6 +453,7 @@ function renderSocial() {
 function renderAll() {
   renderOverview();
   renderInventory();
+  renderPartyFormation();
   renderParty();
   renderPersonas();
   renderSocial();
@@ -544,6 +591,30 @@ function bindEditorEvents() {
         setCoreValue(state.save, key, after);
         markChange(`core:${key}`, "Yen", before, after);
       }, renderOverview);
+    } else if (target.matches("[data-party-formation-slot]")) {
+      const beforeFormation = getPartyFormation(state.save);
+      const beforeAllies = beforeFormation.slice(1).map((member) => member.key);
+      const selectedAllies = [...elements.partyFormation.querySelectorAll("[data-party-formation-slot]")]
+        .map((select) => select.value)
+        .filter(Boolean);
+      if (
+        selectedAllies.includes("shinjiro")
+        && !beforeAllies.includes("shinjiro")
+        && !window.confirm("Adding Shinjiro after his story departure is experimental. The game may remove him or behave incorrectly during transitions and scripted scenes. Continue?")
+      ) {
+        renderPartyFormation();
+        return;
+      }
+      editSafely(() => {
+        setPartyFormation(state.save, selectedAllies);
+        const afterFormation = getPartyFormation(state.save);
+        markChange(
+          "party:formation",
+          "Current party",
+          partyFormationLabel(beforeFormation),
+          partyFormationLabel(afterFormation),
+        );
+      }, renderPartyFormation);
     } else if (target.matches("[data-party-member]")) {
       const memberKey = target.dataset.partyMember;
       const field = target.dataset.partyField;
