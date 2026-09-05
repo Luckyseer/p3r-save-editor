@@ -71,8 +71,6 @@ remove him or behave incorrectly after his story departure.
 
 - Steam `SaveDataNNN.sav`: read and write
 - Supported decrypted P3R save: read and write
-- Xbox/Game Pass saves: not supported
-- PlayStation saves: not supported
 
 ## Privacy
 
