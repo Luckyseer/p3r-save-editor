@@ -7,7 +7,7 @@ import {
 import { versionedIndex } from "./core-values.js";
 import {
   clearPersonaEntry,
-  initializePersonaEntry,
+  personaEntryUpdates,
   readPersonaEntry,
 } from "./persona-entry.js";
 
@@ -39,14 +39,21 @@ export function isCompendiumUnlocked(save, personaId) {
 }
 
 export function unlockCompendiumPersona(save, persona) {
-  if (isCompendiumUnlocked(save, persona.id)) return false;
-  initializePersonaEntry(
-    save,
+  return unlockCompendiumPersonas(save, [persona]).length === 1;
+}
+
+export function unlockCompendiumPersonas(save, personas) {
+  const targets = personas.filter((persona, index, all) => (
+    all.findIndex((entry) => entry.id === persona.id) === index
+    && !isCompendiumUnlocked(save, persona.id)
+  ));
+  if (!targets.length) return [];
+  save.setWords(targets.flatMap((persona) => personaEntryUpdates(
     entryBase(save, persona.id),
     persona,
     PERSONA_VALID_FLAG,
-  );
-  return true;
+  )));
+  return targets;
 }
 
 export function setCompendiumUnlocked(save, persona, unlocked) {

@@ -52,7 +52,7 @@ and test them before editing more.
 - Party HP, SP, level, experience, and Persona skills
 - The protagonist's 12 carried Persona slots
 - Persona level, experience, stats, and skills
-- Velvet Room Compendium registrations, with search and locked/unlocked filters
+- Velvet Room Compendium registrations, with search, filters, and bulk unlock actions
 - Social stat point totals, with in-game level references
 - Social Link ranks
 

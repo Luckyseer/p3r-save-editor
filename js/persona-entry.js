@@ -19,13 +19,7 @@ export function readPersonaEntry(save, base) {
   };
 }
 
-export function clearPersonaEntry(save, base) {
-  for (let index = 0; index < PERSONA_ENTRY_WORDS; index += 1) {
-    save.setWord(base + index, 0);
-  }
-}
-
-export function initializePersonaEntry(save, base, persona, flags = PERSONA_VALID_FLAG) {
+export function personaEntryWords(persona, flags = PERSONA_VALID_FLAG) {
   if (
     !persona
     || !Number.isInteger(persona.id)
@@ -38,19 +32,31 @@ export function initializePersonaEntry(save, base, persona, flags = PERSONA_VALI
     throw new Error("The selected Persona does not have complete reference data.");
   }
 
-  clearPersonaEntry(save, base);
-  save.setWord(base, ((persona.id & 0xffff) << 16) | (flags & 0xffff));
-  save.setWord(base + 1, persona.level & 0xffff);
-  save.setWord(base + 2, 0);
+  const words = Array(PERSONA_ENTRY_WORDS).fill(0);
+  words[0] = ((persona.id & 0xffff) << 16) | (flags & 0xffff);
+  words[1] = persona.level & 0xffff;
   for (let index = 0; index < 4; index += 1) {
     const low = persona.skills[index * 2]?.id ?? 0;
     const high = persona.skills[index * 2 + 1]?.id ?? 0;
-    save.setWord(base + 3 + index, ((high & 0xffff) << 16) | (low & 0xffff));
+    words[3 + index] = ((high & 0xffff) << 16) | (low & 0xffff);
   }
   const [strength, magic, endurance, agility, luck] = persona.stats;
-  save.setWord(
-    base + 7,
-    (strength | (magic << 8) | (endurance << 16) | (agility << 24)) >>> 0,
-  );
-  save.setWord(base + 8, luck);
+  words[7] = (strength | (magic << 8) | (endurance << 16) | (agility << 24)) >>> 0;
+  words[8] = luck;
+  return words;
+}
+
+export function personaEntryUpdates(base, persona, flags = PERSONA_VALID_FLAG) {
+  return personaEntryWords(persona, flags).map((value, index) => [base + index, value]);
+}
+
+export function clearPersonaEntry(save, base) {
+  save.setWords(Array.from(
+    { length: PERSONA_ENTRY_WORDS },
+    (_, index) => [base + index, 0],
+  ));
+}
+
+export function initializePersonaEntry(save, base, persona, flags = PERSONA_VALID_FLAG) {
+  save.setWords(personaEntryUpdates(base, persona, flags));
 }

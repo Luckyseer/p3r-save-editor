@@ -13,7 +13,7 @@
       content="A private Persona 3 Reload save editor for Steam and decrypted saves."
     />
     <title>P3R Save Lab</title>
-    <link rel="stylesheet" href="./styles.css?v=compendium-1" />
+    <link rel="stylesheet" href="./styles.css?v=compendium-2" />
     <script type="module" src="./js/app.js"></script>
   </head>
   <body>
@@ -171,6 +171,10 @@
             <div class="toolbar panel compendium-toolbar">
               <label class="search-field"><span class="sr-only">Search Compendium</span><input id="compendiumSearch" type="search" placeholder="Search by name, Arcana, or ID" /></label>
               <label><span>Status</span><select id="compendiumFilter"><option value="all">All Personas</option><option value="unlocked">Unlocked</option><option value="locked">Locked</option></select></label>
+              <div class="compendium-actions" aria-label="Bulk Compendium actions">
+                <button id="unlockBaseCompendium" class="button button-secondary" type="button">Unlock all (no DLC)</button>
+                <button id="unlockAllCompendium" class="button button-quiet" type="button">Unlock all + DLC</button>
+              </div>
             </div>
             <div id="compendiumGrid" class="compendium-grid"></div>
           </section>

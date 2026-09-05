@@ -74,26 +74,62 @@ export class P3RSave {
   }
 
   setWord(arrayIndex, value) {
-    const normalized = Number(value) >>> 0;
-    const existing = this.recordMap.get(arrayIndex);
-    if (existing) {
-      writeUint32(this.bytes, existing.valueOffset, normalized);
-      existing.value = normalized;
-      return;
-    }
-    if (normalized === 0) return;
+    this.setWords([[arrayIndex, value]]);
+  }
 
-    const next = this.records.find((record) => record.arrayIndex > arrayIndex);
-    const insertAt = next
-      ? next.offset
-      : this.records[this.records.length - 1].offset + SAVE_DATA_RECORD_SIZE;
-    const record = concatBytes(
-      SAVE_DATA_PREFIX,
-      uint32Bytes(arrayIndex),
-      Uint8Array.of(0),
-      uint32Bytes(normalized),
-    );
-    this.bytes = concatBytes(this.bytes.slice(0, insertAt), record, this.bytes.slice(insertAt));
+  setWords(entries) {
+    const updates = new Map();
+    for (const [arrayIndex, value] of entries) {
+      if (!Number.isInteger(arrayIndex) || arrayIndex < 0 || arrayIndex > 0xffffffff) {
+        throw new Error("SaveDataArea index is outside the supported range.");
+      }
+      if (updates.has(arrayIndex)) throw new Error("SaveDataArea update contains duplicate indexes.");
+      updates.set(arrayIndex, Number(value) >>> 0);
+    }
+
+    const missing = [];
+    for (const [arrayIndex, value] of updates) {
+      const existing = this.recordMap.get(arrayIndex);
+      if (existing) {
+        writeUint32(this.bytes, existing.valueOffset, value);
+        existing.value = value;
+      } else if (value !== 0) {
+        missing.push({ arrayIndex, value });
+      }
+    }
+    if (!missing.length) return;
+
+    missing.sort((left, right) => left.arrayIndex - right.arrayIndex);
+    const insertionGroups = new Map();
+    let nextRecordIndex = 0;
+    for (const entry of missing) {
+      while (
+        nextRecordIndex < this.records.length
+        && this.records[nextRecordIndex].arrayIndex < entry.arrayIndex
+      ) nextRecordIndex += 1;
+      const insertAt = nextRecordIndex < this.records.length
+        ? this.records[nextRecordIndex].offset
+        : this.records.at(-1).offset + SAVE_DATA_RECORD_SIZE;
+      if (!insertionGroups.has(insertAt)) insertionGroups.set(insertAt, []);
+      insertionGroups.get(insertAt).push(entry);
+    }
+
+    const chunks = [];
+    let copyFrom = 0;
+    for (const [insertAt, group] of insertionGroups) {
+      chunks.push(this.bytes.slice(copyFrom, insertAt));
+      for (const { arrayIndex, value } of group) {
+        chunks.push(concatBytes(
+          SAVE_DATA_PREFIX,
+          uint32Bytes(arrayIndex),
+          Uint8Array.of(0),
+          uint32Bytes(value),
+        ));
+      }
+      copyFrom = insertAt;
+    }
+    chunks.push(this.bytes.slice(copyFrom));
+    this.bytes = concatBytes(...chunks);
     this.reindex();
   }
 

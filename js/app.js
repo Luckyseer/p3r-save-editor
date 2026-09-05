@@ -23,6 +23,7 @@ import {
   getCompendium,
   isCompendiumUnlocked,
   setCompendiumUnlocked,
+  unlockCompendiumPersonas,
 } from "./compendium.js";
 import { P3RSave } from "./gvas-save.js";
 import { getItemQuantity, setItemQuantity } from "./inventory.js";
@@ -67,7 +68,8 @@ const elements = Object.fromEntries(
     "changeList", "itemSearch", "itemCategory", "ownedOnly",
     "showUnused", "inventorySummary", "inventoryRows", "itemPrev", "itemNext",
     "itemPage", "partyFormation", "partyGrid", "personaGrid", "compendiumSearch",
-    "compendiumFilter", "compendiumSummary", "compendiumGrid", "socialStats", "socialLinks",
+    "compendiumFilter", "compendiumSummary", "compendiumGrid", "unlockBaseCompendium",
+    "unlockAllCompendium", "socialStats", "socialLinks",
     "dirtyDot", "dirtyLabel", "resetChanges", "downloadSave", "safetyDialog", "toast",
     "skillDialog", "skillDialogTitle", "closeSkillDialog", "skillSearch",
     "skillResultCount", "skillChoices",
@@ -121,12 +123,12 @@ function describeFormat(format) {
   return format === "steam" ? "Steam save" : "Decrypted save";
 }
 
-function markChange(key, label, before, after) {
+function markChange(key, label, before, after, rerender = true) {
   const existing = state.changes.get(key);
   const original = existing?.before ?? before;
   if (String(original) === String(after)) state.changes.delete(key);
   else state.changes.set(key, { label, before: original, after });
-  renderChanges();
+  if (rerender) renderChanges();
 }
 
 function renderChanges() {
@@ -387,6 +389,10 @@ function renderCompendium() {
     .sort((left, right) => left.name.localeCompare(right.name));
 
   elements.compendiumSummary.textContent = `${unlockedCount} / ${entries.length} unlocked`;
+  elements.unlockBaseCompendium.disabled = entries
+    .filter((entry) => !entry.dlc)
+    .every((entry) => entry.unlocked);
+  elements.unlockAllCompendium.disabled = unlockedCount === entries.length;
   elements.compendiumGrid.innerHTML = visible.length ? visible.map((entry) => {
     const carried = carriedIds.has(entry.id);
     const stateLabel = entry.unlocked ? "Unlocked" : "Locked";
@@ -402,6 +408,39 @@ function renderCompendium() {
         </div>
       </article>`;
   }).join("") : '<div class="empty-state compendium-empty">No Personas match these filters.</div>';
+}
+
+function unlockCompendiumBulk(includeDlc) {
+  const targets = getCompendium(state.save, state.personas).filter((entry) => (
+    !entry.unlocked && (includeDlc || !entry.dlc)
+  ));
+  if (!targets.length) {
+    showToast(includeDlc ? "Every known Persona is already unlocked." : "Every non-DLC Persona is already unlocked.");
+    return;
+  }
+
+  const dlcCount = targets.filter((entry) => entry.dlc).length;
+  if (
+    dlcCount
+    && !window.confirm(`This will register ${dlcCount} DLC Personas. Only continue if you own the required Persona DLC; otherwise the edited save may not load. Continue?`)
+  ) return;
+
+  editSafely(() => {
+    const unlocked = unlockCompendiumPersonas(state.save, targets);
+    for (const persona of unlocked) {
+      markChange(
+        `compendium:${persona.id}`,
+        `${persona.name} Compendium registration`,
+        "Locked",
+        "Unlocked",
+        false,
+      );
+    }
+    showToast(`Unlocked ${unlocked.length} ${includeDlc ? "Compendium Personas, including DLC" : "non-DLC Compendium Personas"}.`);
+  }, () => {
+    renderCompendium();
+    renderChanges();
+  });
 }
 
 function renderSkillChoices() {
@@ -817,6 +856,8 @@ function bindToolbarEvents() {
   elements.itemNext.addEventListener("click", () => { state.itemPage += 1; renderInventory(); });
   elements.compendiumSearch.addEventListener("input", renderCompendium);
   elements.compendiumFilter.addEventListener("change", renderCompendium);
+  elements.unlockBaseCompendium.addEventListener("click", () => unlockCompendiumBulk(false));
+  elements.unlockAllCompendium.addEventListener("click", () => unlockCompendiumBulk(true));
   elements.resetChanges.addEventListener("click", resetChanges);
   elements.downloadSave.addEventListener("click", downloadEditedSave);
   elements.skillSearch.addEventListener("input", renderSkillChoices);
