@@ -47,19 +47,20 @@ and test them before editing more.
 
 - Inventory quantities, with item search and category filters
 - Protagonist first and last name
-- Yen and play time
+- Yen, play time, and difficulty
 - Current combat formation, including post-departure Shinjiro selection
 - Party HP, SP, level, experience, and Persona skills
 - The protagonist's 12 carried Persona slots
 - Persona level, experience, stats, and skills
+- Velvet Room Compendium registrations, with search and locked/unlocked filters
 - Social stat point totals, with in-game level references
 - Social Link ranks
 
 Persona skills are selected from a searchable known-skill list. Party skill
 editing includes Fuuka's navigator abilities, but unusual combinations may not
-work correctly and can be replaced by later level-ups. The Persona screen edits
-the Personas currently being carried; it does not edit Velvet Room Compendium
-registrations.
+work correctly and can be replaced by later level-ups. Adding a Persona to the
+protagonist's stock also registers its base form in the Compendium when needed,
+preventing crashes caused by carried Personas with missing registrations.
 
 Current-party editing always keeps the protagonist as leader, allows at most
 three unique combat allies, and excludes Fuuka because she is the navigator.

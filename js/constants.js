@@ -12,6 +12,19 @@ export const VERSION_INDEX_OFFSET = Object.freeze({ 1: 0, 2: 4 });
 export const PLAY_TIME_TICKS_PER_SECOND = 30;
 export const MAX_PLAY_TIME_SECONDS = (999 * 3600) + (59 * 60);
 
+// Difficulty is stored both in the visible save header and as a one-hot flag
+// in the gameplay data. The gameplay word contains unrelated flags, so edits
+// must only replace this mask.
+export const DIFFICULTIES = Object.freeze([
+  { id: 0, name: "Peaceful", flag: 0x00002000 },
+  { id: 1, name: "Easy", flag: 0x00004000 },
+  { id: 2, name: "Normal", flag: 0x00008000 },
+  { id: 3, name: "Hard", flag: 0x00010000 },
+  { id: 4, name: "Merciless", flag: 0x00020000 },
+]);
+export const DIFFICULTY_WORD_INDEX = 384;
+export const DIFFICULTY_FLAG_MASK = 0x0003e000;
+
 // The serialized ItemBag begins 12 bytes earlier than the current in-memory
 // UGlobalWork declaration. These bases were verified against three real Steam
 // SaveGameVersion 2 files and their recent-item acquisition history.
@@ -116,8 +129,15 @@ export const SOCIAL_LINKS = Object.freeze([
 ]);
 
 export const PERSONA_STOCK_BASE = 13086;
-export const PERSONA_SLOT_WORDS = 12;
+export const PERSONA_ENTRY_WORDS = 12;
+export const PERSONA_SLOT_WORDS = PERSONA_ENTRY_WORDS;
 export const PERSONA_SLOT_COUNT = 12;
+
+// SaveDataArea block 10053_1 is an array of 464 FDatUnitPersonaEntry records.
+// Each record is 0x30 bytes (12 words), and the Persona ID is its array slot.
+export const COMPENDIUM_BASE = 7261;
+export const COMPENDIUM_ENTRY_COUNT = 464;
+export const PERSONA_VALID_FLAG = 0x0001;
 
 // These are valid protagonist-Persona skills produced by fusion mutation, but
 // no Persona learns them naturally, so the generated skills.json omits them.

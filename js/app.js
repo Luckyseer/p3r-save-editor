@@ -1,5 +1,6 @@
 import { bytesEqual } from "./binary.js";
 import {
+  DIFFICULTIES,
   ITEM_CATEGORIES,
   MAX_PLAY_TIME_SECONDS,
   MUTATION_SKILLS,
@@ -7,15 +8,22 @@ import {
   PLAYER_NAME_MAX_LENGTH,
 } from "./constants.js";
 import {
+  getDifficulty,
   getCoreValues,
   getParty,
   getSocialData,
   setCoreValue,
+  setDifficulty,
   setPartyValue,
   setPlayerName,
   setSocialLinkRank,
   setSocialStat,
 } from "./core-values.js";
+import {
+  getCompendium,
+  isCompendiumUnlocked,
+  setCompendiumUnlocked,
+} from "./compendium.js";
 import { P3RSave } from "./gvas-save.js";
 import { getItemQuantity, setItemQuantity } from "./inventory.js";
 import {
@@ -58,7 +66,8 @@ const elements = Object.fromEntries(
     "loadedFileName", "loadedFileMeta", "overviewCards", "coreFields", "changeCount",
     "changeList", "itemSearch", "itemCategory", "ownedOnly",
     "showUnused", "inventorySummary", "inventoryRows", "itemPrev", "itemNext",
-    "itemPage", "partyFormation", "partyGrid", "personaGrid", "socialStats", "socialLinks",
+    "itemPage", "partyFormation", "partyGrid", "personaGrid", "compendiumSearch",
+    "compendiumFilter", "compendiumSummary", "compendiumGrid", "socialStats", "socialLinks",
     "dirtyDot", "dirtyLabel", "resetChanges", "downloadSave", "safetyDialog", "toast",
     "skillDialog", "skillDialogTitle", "closeSkillDialog", "skillSearch",
     "skillResultCount", "skillChoices",
@@ -151,6 +160,11 @@ function personaName(personaId) {
   return state.personaById.get(personaId)?.name ?? `Unknown Persona ${personaId}`;
 }
 
+function difficultyName(difficultyId) {
+  return DIFFICULTIES.find((difficulty) => difficulty.id === difficultyId)?.name
+    ?? `Unknown (${difficultyId})`;
+}
+
 function skillLabel(skillId) {
   if (!skillId) return "";
   return `${state.skillNames.get(skillId) || `Unknown Skill`} [${skillId}]`;
@@ -165,6 +179,7 @@ function mergeSkills(...lists) {
 function renderOverview() {
   const header = state.save.getHeader();
   const core = getCoreValues(state.save);
+  const difficulty = getDifficulty(state.save);
   const characterName = [header.firstName, header.lastName].filter(Boolean).join(" ") || "Unknown";
   const calendar = header.month && header.day
     ? `${header.month}/${header.day}${header.week ? ` - ${header.week}` : ""}`
@@ -175,6 +190,9 @@ function renderOverview() {
     ["Play time", formatDuration(core.playTime), "Stored in this save"],
     ["Format", describeFormat(state.format), `Save version ${state.save.version}`],
   ];
+  const unknownDifficultyOption = difficulty.value === null
+    ? '<option value="" selected disabled>Unknown saved value</option>'
+    : "";
   elements.overviewCards.innerHTML = metrics.map(([label, value, detail]) => `
     <div class="metric-card"><span>${escapeHtml(label)}</span><strong title="${escapeHtml(value)}">${escapeHtml(value)}</strong><small>${escapeHtml(detail)}</small></div>
   `).join("");
@@ -182,6 +200,7 @@ function renderOverview() {
     <div class="field"><label><span>First name</span><input type="text" maxlength="${PLAYER_NAME_MAX_LENGTH}" value="${escapeHtml(header.firstName)}" data-player-name="firstName" /></label><small>1 to ${PLAYER_NAME_MAX_LENGTH} basic characters</small></div>
     <div class="field"><label><span>Last name</span><input type="text" maxlength="${PLAYER_NAME_MAX_LENGTH}" value="${escapeHtml(header.lastName)}" data-player-name="lastName" /></label><small>1 to ${PLAYER_NAME_MAX_LENGTH} basic characters</small></div>
     <div class="field"><label><span>Yen</span><input type="number" min="0" max="9999999" step="1" value="${core.money}" data-core="money" /></label><small>0 to 9,999,999</small></div>
+    <div class="field"><label><span>Difficulty</span><select data-difficulty>${unknownDifficultyOption}${DIFFICULTIES.map((entry) => `<option value="${entry.id}" ${entry.id === difficulty.value ? "selected" : ""}>${entry.name}</option>`).join("")}</select></label><small>${difficulty.synchronized ? "Difficulty rules and achievements may not update retroactively" : "Saved difficulty values disagree; selecting one will synchronize them"}</small></div>
     <div class="field">
       <span class="field-group-label">Play time</span>
       <div class="play-time-inputs">
@@ -348,6 +367,43 @@ function renderPersonas(openSkillEditor = null) {
   }).join("");
 }
 
+function renderCompendium() {
+  const entries = getCompendium(state.save, state.personas);
+  const unlockedCount = entries.filter((entry) => entry.unlocked).length;
+  const carriedIds = new Set(
+    getPersonaStock(state.save).filter((stock) => stock.id).map((stock) => stock.id),
+  );
+  const search = elements.compendiumSearch.value.trim().toLowerCase();
+  const filter = elements.compendiumFilter.value;
+  const visible = entries
+    .filter((entry) => {
+      if (filter === "unlocked" && !entry.unlocked) return false;
+      if (filter === "locked" && entry.unlocked) return false;
+      if (!search) return true;
+      return entry.name.toLowerCase().includes(search)
+        || entry.arcana.toLowerCase().includes(search)
+        || String(entry.id).includes(search);
+    })
+    .sort((left, right) => left.name.localeCompare(right.name));
+
+  elements.compendiumSummary.textContent = `${unlockedCount} / ${entries.length} unlocked`;
+  elements.compendiumGrid.innerHTML = visible.length ? visible.map((entry) => {
+    const carried = carriedIds.has(entry.id);
+    const stateLabel = entry.unlocked ? "Unlocked" : "Locked";
+    return `
+      <article class="compendium-card ${entry.unlocked ? "unlocked" : "locked"}">
+        <div class="compendium-card-heading">
+          <div><strong>${escapeHtml(entry.name)}</strong><small>${escapeHtml(entry.arcana)} · Lv ${entry.level} · ID ${entry.id}</small></div>
+          ${entry.dlc ? '<span class="persona-badge">DLC</span>' : ""}
+        </div>
+        <div class="compendium-card-footer">
+          <span class="compendium-state">${stateLabel}${carried ? " · Carried" : ""}</span>
+          <button class="button ${entry.unlocked ? "button-quiet" : "button-secondary"}" type="button" data-compendium-id="${entry.id}" aria-pressed="${entry.unlocked}" ${carried && entry.unlocked ? 'disabled title="Carried Personas must stay unlocked"' : ""}>${entry.unlocked ? "Lock" : "Unlock"}</button>
+        </div>
+      </article>`;
+  }).join("") : '<div class="empty-state compendium-empty">No Personas match these filters.</div>';
+}
+
 function renderSkillChoices() {
   const context = getSkillPickerContext();
   if (!context) return;
@@ -455,6 +511,7 @@ function renderAll() {
   renderPartyFormation();
   renderParty();
   renderPersonas();
+  renderCompendium();
   renderSocial();
   renderChanges();
 }
@@ -564,6 +621,13 @@ function bindEditorEvents() {
         setPlayerName(state.save, key, after);
         markChange(`name:${key}`, key === "firstName" ? "First name" : "Last name", before, after);
       }, renderOverview);
+    } else if (target.matches("[data-difficulty]")) {
+      editSafely(() => {
+        const before = getDifficulty(state.save).value;
+        const after = parseInteger(target.value, "Difficulty");
+        setDifficulty(state.save, after);
+        markChange("core:difficulty", "Difficulty", difficultyName(before), difficultyName(after));
+      }, renderOverview);
     } else if (target.matches("[data-playtime-part]")) {
       editSafely(() => {
         const before = getCoreValues(state.save).playTime;
@@ -641,10 +705,22 @@ function bindEditorEvents() {
       }
       editSafely(() => {
         const before = personaName(stock.id);
+        const wasUnlocked = id ? isCompendiumUnlocked(state.save, id) : true;
         if (id) replacePersona(state.save, slot, state.personaById.get(id));
         else clearPersona(state.save, slot);
         markChange(`persona:${slot}`, `Persona stock slot ${slot + 1}`, before, personaName(id));
-      }, () => renderPersonas(slot));
+        if (id && !wasUnlocked) {
+          markChange(
+            `compendium:${id}`,
+            `${personaName(id)} Compendium registration`,
+            "Locked",
+            "Unlocked",
+          );
+        }
+      }, () => {
+        renderPersonas(slot);
+        renderCompendium();
+      });
     } else if (target.matches("[data-persona-field]")) {
       const slot = Number(target.dataset.personaSlot);
       const field = target.dataset.personaField;
@@ -696,6 +772,28 @@ function bindEditorEvents() {
       );
       return;
     }
+    const compendiumButton = event.target.closest("[data-compendium-id]");
+    if (compendiumButton) {
+      const personaId = Number(compendiumButton.dataset.compendiumId);
+      const persona = state.personaById.get(personaId);
+      if (!persona) return;
+      const before = isCompendiumUnlocked(state.save, personaId);
+      const carried = getPersonaStock(state.save).some((stock) => stock.id === personaId);
+      if (before && carried) {
+        showToast("A carried Persona must stay unlocked in the Compendium.", true);
+        return;
+      }
+      editSafely(() => {
+        setCompendiumUnlocked(state.save, persona, !before);
+        markChange(
+          `compendium:${personaId}`,
+          `${persona.name} Compendium registration`,
+          before ? "Unlocked" : "Locked",
+          before ? "Locked" : "Unlocked",
+        );
+      }, renderCompendium);
+      return;
+    }
     const button = event.target.closest("[data-remove-persona]");
     if (!button) return;
     const slot = Number(button.dataset.removePersona);
@@ -717,6 +815,8 @@ function bindToolbarEvents() {
   }
   elements.itemPrev.addEventListener("click", () => { state.itemPage -= 1; renderInventory(); });
   elements.itemNext.addEventListener("click", () => { state.itemPage += 1; renderInventory(); });
+  elements.compendiumSearch.addEventListener("input", renderCompendium);
+  elements.compendiumFilter.addEventListener("change", renderCompendium);
   elements.resetChanges.addEventListener("click", resetChanges);
   elements.downloadSave.addEventListener("click", downloadEditedSave);
   elements.skillSearch.addEventListener("input", renderSkillChoices);

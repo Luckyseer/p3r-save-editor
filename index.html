@@ -13,7 +13,7 @@
       content="A private Persona 3 Reload save editor for Steam and decrypted saves."
     />
     <title>P3R Save Lab</title>
-    <link rel="stylesheet" href="./styles.css?v=party-formation-2" />
+    <link rel="stylesheet" href="./styles.css?v=compendium-1" />
     <script type="module" src="./js/app.js"></script>
   </head>
   <body>
@@ -86,7 +86,8 @@
             <button class="nav-item" data-tab="inventory"><span>02</span>Inventory</button>
             <button class="nav-item" data-tab="party"><span>03</span>Party</button>
             <button class="nav-item" data-tab="personas"><span>04</span>Personas</button>
-            <button class="nav-item" data-tab="social"><span>05</span>Social</button>
+            <button class="nav-item" data-tab="compendium"><span>05</span>Compendium</button>
+            <button class="nav-item" data-tab="social"><span>06</span>Social</button>
           </nav>
           <div class="sidebar-note">
             <strong>Privacy note</strong>
@@ -157,9 +158,21 @@
           <section class="tab-panel" data-panel="personas">
             <div class="section-heading"><div><p class="eyebrow">Protagonist stock</p><h2>Personas</h2></div><span class="section-stat">12 slots</span></div>
             <div class="info-callout warning">
-              This edits the Personas currently carried by the protagonist, not their Velvet Room Compendium registrations. Replacing a slot resets it to that Persona’s verified base level, stats, and starting skills. Entries marked DLC should only be used when that content is owned.
+              Replacing a slot resets it to that Persona’s verified base level, stats, and starting skills. A missing Compendium registration is added automatically to prevent Persona-menu crashes. Entries marked DLC should only be used when that content is owned.
             </div>
             <div id="personaGrid" class="persona-grid"></div>
+          </section>
+
+          <section class="tab-panel" data-panel="compendium">
+            <div class="section-heading"><div><p class="eyebrow">Velvet Room registrations</p><h2>Compendium</h2></div><span id="compendiumSummary" class="section-stat">—</span></div>
+            <div class="info-callout warning">
+              Unlocking a Persona registers its verified base form. Locking removes its saved registration and may affect Compendium completion, summon discounts, and Theurgy availability. Carried Personas must remain unlocked. DLC entries should only be used when that content is owned.
+            </div>
+            <div class="toolbar panel compendium-toolbar">
+              <label class="search-field"><span class="sr-only">Search Compendium</span><input id="compendiumSearch" type="search" placeholder="Search by name, Arcana, or ID" /></label>
+              <label><span>Status</span><select id="compendiumFilter"><option value="all">All Personas</option><option value="unlocked">Unlocked</option><option value="locked">Locked</option></select></label>
+            </div>
+            <div id="compendiumGrid" class="compendium-grid"></div>
           </section>
 
           <section class="tab-panel" data-panel="social">

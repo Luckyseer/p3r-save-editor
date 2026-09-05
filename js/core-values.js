@@ -1,5 +1,8 @@
 import {
   CORE_FIELDS,
+  DIFFICULTIES,
+  DIFFICULTY_FLAG_MASK,
+  DIFFICULTY_WORD_INDEX,
   PARTY_MEMBERS,
   PLAYER_FULL_NAME_INDEX,
   PLAYER_NAME_BUFFER_WORD_COUNT,
@@ -36,6 +39,31 @@ export function setCoreValue(save, key, value) {
   const storedValue = key === "playTime" ? value * PLAY_TIME_TICKS_PER_SECOND : value;
   save.setWord(versionedIndex(save, field.index), storedValue);
   if (key === "playTime") save.writeHeaderNumber("PlayTime", storedValue);
+}
+
+export function getDifficulty(save) {
+  const headerValue = save.readHeaderNumber("Difficulty", "UInt16Property", 2);
+  const gameplayFlag = save.getWord(DIFFICULTY_WORD_INDEX) & DIFFICULTY_FLAG_MASK;
+  const gameplayValue = DIFFICULTIES.find((difficulty) => difficulty.flag === gameplayFlag)?.id ?? null;
+  const validHeader = DIFFICULTIES.some((difficulty) => difficulty.id === headerValue);
+  return {
+    value: validHeader ? headerValue : gameplayValue,
+    headerValue,
+    gameplayValue,
+    synchronized: validHeader && headerValue === gameplayValue,
+  };
+}
+
+export function setDifficulty(save, value) {
+  const difficulty = DIFFICULTIES.find((entry) => entry.id === value);
+  if (!difficulty) throw new Error("Choose a supported difficulty.");
+
+  const currentWord = save.getWord(DIFFICULTY_WORD_INDEX);
+  const gameplayWord = (
+    (currentWord & ~DIFFICULTY_FLAG_MASK) | difficulty.flag
+  ) >>> 0;
+  save.writeHeaderNumber("Difficulty", value, "UInt16Property", 2);
+  save.setWord(DIFFICULTY_WORD_INDEX, gameplayWord);
 }
 
 function writePlayerNameBuffer(save, versionOneIndex, value) {

@@ -1,10 +1,16 @@
 import {
   PERSONA_SLOT_COUNT,
-  PERSONA_SLOT_WORDS,
   PERSONA_STOCK_BASE,
+  PERSONA_SLOT_WORDS,
 } from "./constants.js";
+import { unlockCompendiumPersona } from "./compendium.js";
 import { versionedIndex } from "./core-values.js";
-import { readPersonaSkillSlots, writePersonaSkillSlot } from "./persona-skills.js";
+import {
+  clearPersonaEntry,
+  initializePersonaEntry,
+  readPersonaEntry,
+} from "./persona-entry.js";
+import { writePersonaSkillSlot } from "./persona-skills.js";
 
 function slotBase(save, slot) {
   if (!Number.isInteger(slot) || slot < 0 || slot >= PERSONA_SLOT_COUNT) {
@@ -13,25 +19,12 @@ function slotBase(save, slot) {
   return versionedIndex(save, PERSONA_STOCK_BASE) + slot * PERSONA_SLOT_WORDS;
 }
 
-function wordBytes(word) {
-  return [word & 0xff, (word >>> 8) & 0xff, (word >>> 16) & 0xff, (word >>> 24) & 0xff];
-}
-
 export function getPersonaStock(save) {
   return Array.from({ length: PERSONA_SLOT_COUNT }, (_, slot) => {
     const base = slotBase(save, slot);
-    const identity = save.getWord(base);
-    const stats = wordBytes(save.getWord(base + 7));
-    const skillSlots = readPersonaSkillSlots(save, base);
     return {
       slot,
-      flags: identity & 0xffff,
-      id: (identity >>> 16) & 0xffff,
-      level: save.getWord(base + 1) & 0xffff,
-      experience: save.getWord(base + 2),
-      skillSlots,
-      skills: skillSlots.filter(Boolean),
-      stats: [...stats, save.getWord(base + 8) & 0xff],
+      ...readPersonaEntry(save, base),
     };
   });
 }
@@ -43,30 +36,14 @@ export function replacePersona(save, slot, persona) {
   if (duplicate) throw new Error(`That Persona is already in slot ${duplicate.slot + 1}.`);
 
   const base = slotBase(save, slot);
-  for (let index = 0; index < PERSONA_SLOT_WORDS; index += 1) {
-    save.setWord(base + index, 0);
-  }
-  save.setWord(base, ((persona.id & 0xffff) << 16) | 1);
-  save.setWord(base + 1, persona.level & 0xffff);
-  save.setWord(base + 2, 0);
-  for (let index = 0; index < 4; index += 1) {
-    const low = persona.skills[index * 2]?.id ?? 0;
-    const high = persona.skills[index * 2 + 1]?.id ?? 0;
-    save.setWord(base + 3 + index, ((high & 0xffff) << 16) | (low & 0xffff));
-  }
-  const [strength, magic, endurance, agility, luck] = persona.stats;
-  save.setWord(
-    base + 7,
-    strength | (magic << 8) | (endurance << 16) | (agility << 24),
-  );
-  save.setWord(base + 8, luck);
+  initializePersonaEntry(save, base, persona);
+  // The Persona menu expects every carried Persona to have a corresponding
+  // valid Compendium entry. Registering it here prevents menu-load crashes.
+  unlockCompendiumPersona(save, persona);
 }
 
 export function clearPersona(save, slot) {
-  const base = slotBase(save, slot);
-  for (let index = 0; index < PERSONA_SLOT_WORDS; index += 1) {
-    save.setWord(base + index, 0);
-  }
+  clearPersonaEntry(save, slotBase(save, slot));
 }
 
 export function setPersonaValue(save, slot, field, value) {
