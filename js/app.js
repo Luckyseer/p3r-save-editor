@@ -119,8 +119,9 @@ function setLoadStatus(message, isError = false) {
   elements.loadStatus.style.color = isError ? "var(--danger)" : "var(--cyan-soft)";
 }
 
-function describeFormat(format) {
-  return format === "steam" ? "Steam save" : "Decrypted save";
+function describeFormat(format, save = null) {
+  const formatLabel = format === "steam" ? "Steam save" : "Decrypted save";
+  return save?.isEpisodeAigis ? `${formatLabel} · Episode Aigis` : formatLabel;
 }
 
 function markChange(key, label, before, after, rerender = true) {
@@ -190,7 +191,7 @@ function renderOverview() {
     ["Character", characterName, header.slotName || "Save slot"],
     ["Calendar", calendar, header.timeZone || "Story date"],
     ["Play time", formatDuration(core.playTime), "Stored in this save"],
-    ["Format", describeFormat(state.format), `Save version ${state.save.version}`],
+    ["Format", describeFormat(state.format, state.save), `Save version ${state.save.version}`],
   ];
   const unknownDifficultyOption = difficulty.value === null
     ? '<option value="" selected disabled>Unknown saved value</option>'
@@ -277,6 +278,10 @@ function partyFormationOptions(selectedKey, selectedKeys) {
 }
 
 function renderPartyFormation() {
+  if (state.save.isEpisodeAigis) {
+    elements.partyFormation.innerHTML = '<div class="empty-state">Episode Aigis uses a different party layout. Party formation editing is not available for this save yet.</div>';
+    return;
+  }
   const formation = getPartyFormation(state.save);
   if (
     formation[0]?.key !== "protagonist"
@@ -297,6 +302,10 @@ function renderPartyFormation() {
 }
 
 function renderParty(openSkillEditor = null) {
+  if (state.save.isEpisodeAigis) {
+    elements.partyGrid.innerHTML = '<div class="empty-state">Episode Aigis uses different party-member offsets. Party stat and skill editing is not available for this save yet.</div>';
+    return;
+  }
   const partyPersonas = new Map(
     getPartyPersonas(state.save).map((persona) => [persona.memberKey, persona]),
   );
@@ -528,6 +537,11 @@ function socialStatReference(stat) {
 }
 
 function renderSocial() {
+  if (state.save.isEpisodeAigis) {
+    elements.socialStats.innerHTML = '<div class="empty-state">Social stats and Social Links are not used by Episode Aigis.</div>';
+    elements.socialLinks.innerHTML = '<div class="empty-state">Social stats and Social Links are not used by Episode Aigis.</div>';
+    return;
+  }
   const social = getSocialData(state.save);
   elements.socialStats.innerHTML = social.stats.map((stat) => {
     const reference = socialStatReference(stat);
@@ -584,7 +598,7 @@ async function loadFile(file) {
     state.changes.clear();
     state.itemPage = 1;
     elements.loadedFileName.textContent = state.fileName;
-    elements.loadedFileMeta.textContent = `${describeFormat(state.format)} - save version ${state.save.version}`;
+    elements.loadedFileMeta.textContent = `${describeFormat(state.format, state.save)} - save version ${state.save.version}`;
     elements.landing.hidden = true;
     elements.editor.hidden = false;
     renderAll();

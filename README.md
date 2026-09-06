@@ -3,8 +3,9 @@
 ## [Open P3R Save Lab](https://luckyseer.github.io/p3r-save-editor/)
 
 P3R Save Lab is an unofficial Persona 3 Reload save editor that runs in a web
-browser. It supports Steam saves and supported decrypted saves. The selected
-file stays in the browser and the original file is never changed.
+browser. It supports Steam saves, including Episode Aigis saves, and supported
+decrypted saves. The selected file stays in the browser and the original file
+is never changed.
 
 > [!WARNING]
 > Save editing can cause crashes, story problems, lost progress, or an
@@ -70,6 +71,9 @@ remove him or behave incorrectly after his story departure.
 ## Supported files
 
 - Steam `SaveDataNNN.sav`: read and write
+- Steam Episode Aigis saves: inventory, core values, protagonist Persona stock,
+  and Compendium editing; Party and Social editing is intentionally disabled
+  because those sections use a different Episode Aigis layout
 - Supported decrypted P3R save: read and write
 
 ## Privacy

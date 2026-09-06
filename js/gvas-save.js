@@ -1,5 +1,6 @@
 import {
-  P3R_CLASS_MARKER,
+  ASTREA_CLASS_MARKER,
+  SUPPORTED_CLASS_MARKERS,
   PLAY_TIME_TICKS_PER_SECOND,
   SUPPORTED_VERSIONS,
 } from "./constants.js";
@@ -28,9 +29,12 @@ export class P3RSave {
     if (!SUPPORTED_VERSIONS.has(this.version)) {
       throw new Error(`Unsupported save version ${this.version}.`);
     }
-    if (!containsAscii(this.bytes, P3R_CLASS_MARKER)) {
+    const saveClass = SUPPORTED_CLASS_MARKERS.find((marker) => containsAscii(this.bytes, marker));
+    if (!saveClass) {
       throw new Error("This decrypted file is not a Persona 3 Reload save.");
     }
+    this.isEpisodeAigis = saveClass === ASTREA_CLASS_MARKER;
+    this.saveClass = saveClass;
     this.reindex();
   }
 

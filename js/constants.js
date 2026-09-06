@@ -4,6 +4,15 @@ export const STEAM_KEY = new TextEncoder().encode(
   "ae5zeitaix1joowooNgie3fahP5Ohph",
 );
 export const P3R_CLASS_MARKER = "/Script/xrd777.XRD777SaveGame\0";
+// Episode Aigis uses the same GVAS/SaveDataArea container with a different
+// Unreal save-game class. Its shared fields can be edited safely, while the
+// UI keeps mode-specific party and Social data read-only until those layouts
+// are independently verified.
+export const ASTREA_CLASS_MARKER = "/Script/xrd777.AstreaSaveGame\0";
+export const SUPPORTED_CLASS_MARKERS = Object.freeze([
+  P3R_CLASS_MARKER,
+  ASTREA_CLASS_MARKER,
+]);
 
 export const SUPPORTED_VERSIONS = new Set([1, 2]);
 export const VERSION_INDEX_OFFSET = Object.freeze({ 1: 0, 2: 4 });
