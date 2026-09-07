@@ -5,9 +5,8 @@ export const STEAM_KEY = new TextEncoder().encode(
 );
 export const P3R_CLASS_MARKER = "/Script/xrd777.XRD777SaveGame\0";
 // Episode Aigis uses the same GVAS/SaveDataArea container with a different
-// Unreal save-game class. Its shared fields can be edited safely, while the
-// UI keeps mode-specific party and Social data read-only until those layouts
-// are independently verified.
+// Unreal save-game class. Playable Aigis and Metis have separate unit records;
+// the original protagonist, party Aigis, and Shinjiro records are retained.
 export const ASTREA_CLASS_MARKER = "/Script/xrd777.AstreaSaveGame\0";
 export const SUPPORTED_CLASS_MARKERS = Object.freeze([
   P3R_CLASS_MARKER,
@@ -207,4 +206,23 @@ export const PARTY_MEMBERS = Object.freeze([
       personaBase: hp + 16,
     };
   }),
+]);
+
+// Version-one SaveDataArea indexes, like PARTY_MEMBERS above. Verified against
+// SaveData1.sav (version 2). Blocks 0x1010a_3 and 0x1010b_3 are appended after
+// the original party blocks, not at the next 176-word unit-array position.
+// FDatUnitWork/FDatUnitStatus field definitions: rirurin/p3rpc.nativetypes,
+// p3rpc.nativetypes.Interfaces/Xrd777.cs (linked in the site's credits).
+export const EPISODE_AIGIS_PARTY_MEMBERS = Object.freeze([
+  {
+    key: "aigis", name: "Aigis", id: 12,
+    hp: 18702, sp: 18703, level: 18706, experience: 18707,
+    personaBase: 18718,
+  },
+  {
+    key: "metis", name: "Metis", id: 11,
+    hp: 18526, sp: 18527, level: 18543, experience: 18544,
+    personaBase: 18542,
+  },
+  ...PARTY_MEMBERS.filter((member) => ![1, 7, 10].includes(member.id)),
 ]);

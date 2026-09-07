@@ -1,5 +1,6 @@
 import {
   CORE_FIELDS,
+  EPISODE_AIGIS_PARTY_MEMBERS,
   DIFFICULTIES,
   DIFFICULTY_FLAG_MASK,
   DIFFICULTY_WORD_INDEX,
@@ -83,6 +84,7 @@ function writePlayerNameBuffer(save, versionOneIndex, value) {
 }
 
 export function setPlayerName(save, key, value) {
+  if (save.isEpisodeAigis) throw new Error("Name editing is not available for Episode Aigis.");
   const field = PLAYER_NAME_FIELDS[key];
   if (!field) throw new Error("Unknown protagonist name field.");
   if (typeof value !== "string" || value.length < 1 || value.length > PLAYER_NAME_MAX_LENGTH) {
@@ -108,8 +110,27 @@ export function setPlayerName(save, key, value) {
   );
 }
 
+export function getPartyMembers(save) {
+  if (!save.isEpisodeAigis) return PARTY_MEMBERS;
+  // Check the tagged primary unit blocks before using these offsets. Later
+  // sections contain additional copies that must not be mistaken for the party.
+  for (const member of EPISODE_AIGIS_PARTY_MEMBERS) {
+    const hp = versionedIndex(save, member.hp);
+    if (
+      save.getWord(hp - 6) !== 0x10100 + member.id - 1
+      || save.getWord(hp - 5) !== 3
+      || save.getWord(hp - 4) !== 0x2b4
+      || save.getWord(hp - 2) !== 1
+      || save.getWord(hp - 1) !== member.id
+    ) {
+      throw new Error(`The saved ${member.name} character record is not supported.`);
+    }
+  }
+  return EPISODE_AIGIS_PARTY_MEMBERS;
+}
+
 export function getParty(save) {
-  return PARTY_MEMBERS.map((member) => ({
+  return getPartyMembers(save).map((member) => ({
     ...member,
     hp: save.getWord(versionedIndex(save, member.hp)),
     sp: save.getWord(versionedIndex(save, member.sp)),
@@ -119,7 +140,7 @@ export function getParty(save) {
 }
 
 export function setPartyValue(save, memberKey, field, value) {
-  const member = PARTY_MEMBERS.find((entry) => entry.key === memberKey);
+  const member = getPartyMembers(save).find((entry) => entry.key === memberKey);
   if (!member || !["hp", "sp", "level", "experience"].includes(field)) {
     throw new Error("Unknown party field.");
   }
@@ -137,7 +158,8 @@ export function setPartyValue(save, memberKey, field, value) {
   if (field === "level") {
     const oldWord = save.getWord(index);
     save.setWord(index, (oldWord & 0xffff0000) | value);
-    if (member.key === "protagonist") save.writeHeaderNumber("PlayerLevel", value);
+    const leaderKey = save.isEpisodeAigis ? "aigis" : "protagonist";
+    if (member.key === leaderKey) save.writeHeaderNumber("PlayerLevel", value);
   } else {
     save.setWord(index, value);
   }

@@ -183,7 +183,8 @@ function renderOverview() {
   const header = state.save.getHeader();
   const core = getCoreValues(state.save);
   const difficulty = getDifficulty(state.save);
-  const characterName = [header.firstName, header.lastName].filter(Boolean).join(" ") || "Unknown";
+  const characterName = state.save.isEpisodeAigis ? "Aigis"
+    : [header.firstName, header.lastName].filter(Boolean).join(" ") || "Unknown";
   const calendar = header.month && header.day
     ? `${header.month}/${header.day}${header.week ? ` - ${header.week}` : ""}`
     : "Unavailable";
@@ -200,8 +201,10 @@ function renderOverview() {
     <div class="metric-card"><span>${escapeHtml(label)}</span><strong title="${escapeHtml(value)}">${escapeHtml(value)}</strong><small>${escapeHtml(detail)}</small></div>
   `).join("");
   elements.coreFields.innerHTML = `
+    ${state.save.isEpisodeAigis ? "" : `
     <div class="field"><label><span>First name</span><input type="text" maxlength="${PLAYER_NAME_MAX_LENGTH}" value="${escapeHtml(header.firstName)}" data-player-name="firstName" /></label><small>1 to ${PLAYER_NAME_MAX_LENGTH} basic characters</small></div>
     <div class="field"><label><span>Last name</span><input type="text" maxlength="${PLAYER_NAME_MAX_LENGTH}" value="${escapeHtml(header.lastName)}" data-player-name="lastName" /></label><small>1 to ${PLAYER_NAME_MAX_LENGTH} basic characters</small></div>
+    `}
     <div class="field"><label><span>Yen</span><input type="number" min="0" max="9999999" step="1" value="${core.money}" data-core="money" /></label><small>0 to 9,999,999</small></div>
     <div class="field"><label><span>Difficulty</span><select data-difficulty>${unknownDifficultyOption}${DIFFICULTIES.map((entry) => `<option value="${entry.id}" ${entry.id === difficulty.value ? "selected" : ""}>${entry.name}</option>`).join("")}</select></label><small>${difficulty.synchronized ? "Difficulty rules and achievements may not update retroactively" : "Saved difficulty values disagree; selecting one will synchronize them"}</small></div>
     <div class="field">
@@ -302,10 +305,6 @@ function renderPartyFormation() {
 }
 
 function renderParty(openSkillEditor = null) {
-  if (state.save.isEpisodeAigis) {
-    elements.partyGrid.innerHTML = '<div class="empty-state">Episode Aigis uses different party-member offsets. Party stat and skill editing is not available for this save yet.</div>';
-    return;
-  }
   const partyPersonas = new Map(
     getPartyPersonas(state.save).map((persona) => [persona.memberKey, persona]),
   );

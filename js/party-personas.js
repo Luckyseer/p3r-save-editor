@@ -26,10 +26,12 @@ function readPartyPersona(save, member) {
 }
 
 export function getPartyPersonas(save) {
+  if (save.isEpisodeAigis) return [];
   return supportingParty.map((member) => readPartyPersona(save, member));
 }
 
 export function setPartyPersonaSkill(save, memberKey, skillSlot, skillId) {
+  if (save.isEpisodeAigis) throw new Error("Party Persona skill editing is not available for Episode Aigis yet.");
   const member = findMember(memberKey);
   if (!member) throw new Error("Unknown party member.");
 

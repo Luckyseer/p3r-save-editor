@@ -71,9 +71,11 @@ remove him or behave incorrectly after his story departure.
 ## Supported files
 
 - Steam `SaveDataNNN.sav`: read and write
-- Steam Episode Aigis saves: inventory, core values, protagonist Persona stock,
-  and Compendium editing; Party and Social editing is intentionally disabled
-  because those sections use a different Episode Aigis layout
+- Steam Episode Aigis saves: inventory, yen, play time, difficulty, Aigis's
+  carried Personas, Compendium, and party HP, SP, level, and experience
+- Episode Aigis party stats include playable Aigis, Metis, and the returning
+  party members. Name editing, party formation, party Persona skills, and
+  Social editing are not available for Episode Aigis.
 - Supported decrypted P3R save: read and write
 
 ## Privacy

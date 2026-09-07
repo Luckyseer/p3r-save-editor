@@ -4,7 +4,7 @@ import {
   PERSONA_SLOT_WORDS,
 } from "./constants.js";
 import { unlockCompendiumPersona } from "./compendium.js";
-import { versionedIndex } from "./core-values.js";
+import { getPartyMembers, versionedIndex } from "./core-values.js";
 import {
   clearPersonaEntry,
   initializePersonaEntry,
@@ -16,7 +16,10 @@ function slotBase(save, slot) {
   if (!Number.isInteger(slot) || slot < 0 || slot >= PERSONA_SLOT_COUNT) {
     throw new Error("Invalid Persona stock slot.");
   }
-  return versionedIndex(save, PERSONA_STOCK_BASE) + slot * PERSONA_SLOT_WORDS;
+  const stockBase = save.isEpisodeAigis
+    ? getPartyMembers(save).find((member) => member.key === "aigis").personaBase
+    : PERSONA_STOCK_BASE;
+  return versionedIndex(save, stockBase) + slot * PERSONA_SLOT_WORDS;
 }
 
 export function getPersonaStock(save) {
