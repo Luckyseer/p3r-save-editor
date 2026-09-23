@@ -76,6 +76,12 @@ remove him or behave incorrectly after his story departure.
 - Episode Aigis party stats include playable Aigis, Metis, and the returning
   party members. Name editing, party formation, party Persona skills, and
   Social editing are not available for Episode Aigis.
+- Episode Aigis uses its own item and Persona tables. Its inventory lists the
+  DLC's equipment, with each variant's ability and user, so a specific
+  version such as Cannon of Eminence with +Magic Ability can be searched by
+  name or ability. Compendium entries use Episode Aigis base forms (Orpheus
+  starts at level 25), and entries registered below that level can be
+  repaired from the Compendium tab.
 - Supported decrypted P3R save: read and write
 
 ## Privacy

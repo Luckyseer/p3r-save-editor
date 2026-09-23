@@ -56,6 +56,26 @@ export function unlockCompendiumPersonas(save, personas) {
   return targets;
 }
 
+// A registration below the Persona's base level cannot occur in game. Older
+// editor builds wrote main-game data into Episode Aigis saves, registering
+// Orpheus at level 1 instead of 25, which crashes the Velvet Room summon menu.
+export function getUnderleveledCompendiumEntries(save, personas) {
+  return getCompendium(save, personas).filter((entry) => (
+    entry.unlocked && entry.registeredLevel < entry.level
+  ));
+}
+
+export function repairCompendiumEntries(save, personas) {
+  const targets = getUnderleveledCompendiumEntries(save, personas);
+  if (!targets.length) return [];
+  save.setWords(targets.flatMap((entry) => personaEntryUpdates(
+    entryBase(save, entry.id),
+    entry,
+    entry.flags,
+  )));
+  return targets;
+}
+
 export function setCompendiumUnlocked(save, persona, unlocked) {
   if (typeof unlocked !== "boolean") throw new Error("Compendium state must be locked or unlocked.");
   if (unlocked) return unlockCompendiumPersona(save, persona);

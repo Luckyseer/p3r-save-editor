@@ -165,6 +165,8 @@ input[type="checkbox"] { accent-color: var(--cyan); width: 17px; height: 17px; }
 .persona-skill-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
 .compendium-toolbar { position: sticky; z-index: 3; top: 0; }
 .compendium-actions { display: flex; gap: 8px; margin-left: auto; }
+.compendium-repair { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.compendium-repair[hidden] { display: none; }
 .compendium-actions .button { white-space: nowrap; }
 .compendium-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 11px; }
 .compendium-card { display: grid; align-content: space-between; min-height: 132px; padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: linear-gradient(145deg, rgba(11,44,155,.62), rgba(6,18,81,.8)); transition: opacity .18s, filter .18s, border-color .18s; }

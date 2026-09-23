@@ -21,7 +21,9 @@ import {
 } from "./core-values.js";
 import {
   getCompendium,
+  getUnderleveledCompendiumEntries,
   isCompendiumUnlocked,
+  repairCompendiumEntries,
   setCompendiumUnlocked,
   unlockCompendiumPersonas,
 } from "./compendium.js";
@@ -46,6 +48,9 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ITEM_PAGE_SIZE = 50;
 
 const state = {
+  // Episode Aigis has its own item and Persona tables. Item IDs are reused
+  // for different items, and some Personas (Orpheus) have different bases.
+  gameData: { main: null, episodeAigis: null },
   items: [],
   personas: [],
   skills: [],
@@ -69,7 +74,8 @@ const elements = Object.fromEntries(
     "showUnused", "inventorySummary", "inventoryRows", "itemPrev", "itemNext",
     "itemPage", "partyFormation", "partyGrid", "personaGrid", "compendiumSearch",
     "compendiumFilter", "compendiumSummary", "compendiumGrid", "unlockBaseCompendium",
-    "unlockAllCompendium", "socialStats", "socialLinks",
+    "unlockAllCompendium", "compendiumRepair", "compendiumRepairText", "repairCompendium",
+    "socialStats", "socialLinks",
     "dirtyDot", "dirtyLabel", "resetChanges", "downloadSave", "safetyDialog", "toast",
     "skillDialog", "skillDialogTitle", "closeSkillDialog", "skillSearch",
     "skillResultCount", "skillChoices",
@@ -155,7 +161,16 @@ function renderChanges() {
 }
 
 function itemName(itemId) {
-  return state.items.find((item) => item.id === itemId)?.name ?? `Item ${itemId}`;
+  const item = state.items.find((entry) => entry.id === itemId);
+  if (!item) return `Item ${itemId}`;
+  return item.effect ? `${item.name} (${item.effect})` : item.name;
+}
+
+function useGameData(save) {
+  const data = save.isEpisodeAigis ? state.gameData.episodeAigis : state.gameData.main;
+  state.items = data.items;
+  state.personas = data.personas;
+  state.personaById = new Map(state.personas.map((persona) => [persona.id, persona]));
 }
 
 function personaName(personaId) {
@@ -229,6 +244,8 @@ function filteredItems() {
     if (elements.ownedOnly.checked && quantity === 0) return false;
     if (!search) return true;
     return item.name.toLowerCase().includes(search)
+      || item.effect?.toLowerCase().includes(search)
+      || item.equip?.toLowerCase().includes(search)
       || String(item.id).includes(search)
       || `0x${item.id.toString(16)}`.includes(search.replaceAll(" ", ""));
   });
@@ -247,12 +264,17 @@ function renderInventory() {
   elements.inventorySummary.textContent = `${ownedCount.toLocaleString()} owned types`;
   elements.inventoryRows.innerHTML = visible.length ? visible.map((item) => {
     const quantity = getItemQuantity(state.save, item.id);
+    const details = [
+      item.effect,
+      item.equip,
+      item.unused ? "Unverified/unused entry" : quantity ? "In inventory" : "Not owned",
+    ].filter(Boolean).join(" · ");
     return `
       <div class="table-row" role="row">
-        <span class="item-name"><strong>${escapeHtml(item.name)}</strong><small>${item.unused ? "Unverified/unused entry" : quantity ? "In inventory" : "Not owned"}</small></span>
+        <span class="item-name"><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(details)}</small></span>
         <span class="category-chip">${escapeHtml(item.categoryName)}</span>
         <span>${item.id}</span>
-        <input class="quantity-input" type="number" min="0" max="99" step="1" value="${quantity}" aria-label="${escapeHtml(item.name)} quantity" data-item-id="${item.id}" />
+        <input class="quantity-input" type="number" min="0" max="99" step="1" value="${quantity}" aria-label="${escapeHtml(itemName(item.id))} quantity" data-item-id="${item.id}" />
       </div>`;
   }).join("") : '<div class="empty-state">No matching item IDs.</div>';
   elements.itemPage.textContent = `Page ${state.itemPage} of ${pages} - ${filtered.length.toLocaleString()} results`;
@@ -397,6 +419,11 @@ function renderCompendium() {
     .sort((left, right) => left.name.localeCompare(right.name));
 
   elements.compendiumSummary.textContent = `${unlockedCount} / ${entries.length} unlocked`;
+  const underleveled = getUnderleveledCompendiumEntries(state.save, state.personas);
+  elements.compendiumRepair.hidden = !underleveled.length;
+  elements.compendiumRepairText.textContent = underleveled.length
+    ? `${underleveled.map((entry) => `${entry.name} (Lv ${entry.registeredLevel}, base Lv ${entry.level})`).join(", ")} ${underleveled.length === 1 ? "is" : "are"} registered below the base level for this game, which can crash the Velvet Room. Repair resets ${underleveled.length === 1 ? "it" : "them"} to the verified base form.`
+    : "";
   elements.unlockBaseCompendium.disabled = entries
     .filter((entry) => !entry.dlc)
     .every((entry) => entry.unlocked);
@@ -416,6 +443,25 @@ function renderCompendium() {
         </div>
       </article>`;
   }).join("") : '<div class="empty-state compendium-empty">No Personas match these filters.</div>';
+}
+
+function repairCompendium() {
+  editSafely(() => {
+    const repaired = repairCompendiumEntries(state.save, state.personas);
+    for (const entry of repaired) {
+      markChange(
+        `compendium:${entry.id}:repair`,
+        `${entry.name} Compendium level`,
+        `Lv ${entry.registeredLevel}`,
+        `Lv ${entry.level}`,
+        false,
+      );
+    }
+    showToast(`Repaired ${repaired.length} Compendium ${repaired.length === 1 ? "entry" : "entries"}.`);
+  }, () => {
+    renderCompendium();
+    renderChanges();
+  });
 }
 
 function unlockCompendiumBulk(includeDlc) {
@@ -592,6 +638,7 @@ async function loadFile(file) {
     }
     state.originalRaw = raw.slice();
     state.save = save;
+    useGameData(save);
     state.format = decoded.format;
     state.fileName = file.name || "SaveData.sav";
     state.changes.clear();
@@ -871,6 +918,7 @@ function bindToolbarEvents() {
   elements.compendiumFilter.addEventListener("change", renderCompendium);
   elements.unlockBaseCompendium.addEventListener("click", () => unlockCompendiumBulk(false));
   elements.unlockAllCompendium.addEventListener("click", () => unlockCompendiumBulk(true));
+  elements.repairCompendium.addEventListener("click", repairCompendium);
   elements.resetChanges.addEventListener("click", resetChanges);
   elements.downloadSave.addEventListener("click", downloadEditedSave);
   elements.skillSearch.addEventListener("input", renderSkillChoices);
@@ -917,19 +965,19 @@ function bindToolbarEvents() {
 
 async function initialize() {
   try {
-    const [itemsResponse, personasResponse, skillsResponse] = await Promise.all([
-      fetch("./data/items.json"),
-      fetch("./data/personas.json"),
-      fetch("./data/skills.json"),
-    ]);
-    if (!itemsResponse.ok || !personasResponse.ok || !skillsResponse.ok) {
+    const responses = await Promise.all([
+      "items", "personas", "items-episode-aigis", "personas-episode-aigis", "skills",
+    ].map((name) => fetch(`./data/${name}.json`)));
+    if (responses.some((response) => !response.ok)) {
       throw new Error("Editor reference data could not be loaded.");
     }
-    state.items = await itemsResponse.json();
-    state.personas = await personasResponse.json();
-    state.skills = mergeSkills(await skillsResponse.json(), MUTATION_SKILLS);
+    const [items, personas, aigisItems, aigisPersonas, skills] = await Promise.all(
+      responses.map((response) => response.json()),
+    );
+    state.gameData.main = { items, personas };
+    state.gameData.episodeAigis = { items: aigisItems, personas: aigisPersonas };
+    state.skills = mergeSkills(skills, MUTATION_SKILLS);
     state.partySkills = mergeSkills(state.skills, NAVIGATOR_SKILLS);
-    state.personaById = new Map(state.personas.map((persona) => [persona.id, persona]));
     state.skillNames = new Map(state.partySkills.map((skill) => [skill.id, skill.name]));
     state.skills.sort((left, right) => left.name.localeCompare(right.name));
     state.partySkills.sort((left, right) => left.name.localeCompare(right.name));
