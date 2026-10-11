@@ -5,6 +5,15 @@ function wordBytes(word) {
   return [word & 0xff, (word >>> 8) & 0xff, (word >>> 16) & 0xff, (word >>> 24) & 0xff];
 }
 
+// Persona EXP is cumulative, not progress since its base level. A zero-filled
+// EXP word is inconsistent with a newly registered Persona above level 1.
+// Source: https://steamcommunity.com/sharedfiles/filedetails/?id=3230774091
+// (Experience and Levels). Both the main game and Episode Aigis use this curve;
+// the base level must come from the corresponding game's reference data.
+function basePersonaExperience(level) {
+  return level === 1 ? 0 : Math.floor(level ** 3 * (4.34 - 0.0266 * level) + 10);
+}
+
 export function readPersonaEntry(save, base) {
   const identity = save.getWord(base);
   const skillSlots = readPersonaSkillSlots(save, base);
@@ -24,6 +33,8 @@ export function personaEntryWords(persona, flags = PERSONA_VALID_FLAG) {
     !persona
     || !Number.isInteger(persona.id)
     || !Number.isInteger(persona.level)
+    || persona.level < 1
+    || persona.level > 99
     || !Array.isArray(persona.stats)
     || persona.stats.length < 5
     || persona.stats.slice(0, 5).some((stat) => !Number.isInteger(stat))
@@ -35,6 +46,7 @@ export function personaEntryWords(persona, flags = PERSONA_VALID_FLAG) {
   const words = Array(PERSONA_ENTRY_WORDS).fill(0);
   words[0] = ((persona.id & 0xffff) << 16) | (flags & 0xffff);
   words[1] = persona.level & 0xffff;
+  words[2] = basePersonaExperience(persona.level);
   for (let index = 0; index < 4; index += 1) {
     const low = persona.skills[index * 2]?.id ?? 0;
     const high = persona.skills[index * 2 + 1]?.id ?? 0;
