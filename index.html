@@ -13,7 +13,7 @@
       content="A private Persona 3 Reload save editor for Steam and decrypted saves."
     />
     <title>P3R Save Lab</title>
-    <link rel="stylesheet" href="./styles.css?v=compendium-3" />
+    <link rel="stylesheet" href="./styles.css?v=requests-1" />
     <script type="module" src="./js/app.js"></script>
   </head>
   <body>
@@ -31,8 +31,8 @@
           <p class="eyebrow">Unofficial browser save editor</p>
           <h1>Your save.<br /><em>Your rules.</em></h1>
           <p class="hero-lede">
-            Inspect and edit P3R inventory, party values, Social Links, and your
-            Persona stock. Your save stays inside this browser tab.
+            Inspect and edit P3R inventory, party values, Social Links, Elizabeth's
+            requests, and your Persona stock. Your save stays inside this browser tab.
           </p>
           <div class="hero-points" aria-label="Editor features">
             <span>Steam + decrypted saves</span>
@@ -88,6 +88,7 @@
             <button class="nav-item" data-tab="personas"><span>04</span>Personas</button>
             <button class="nav-item" data-tab="compendium"><span>05</span>Compendium</button>
             <button class="nav-item" data-tab="social"><span>06</span>Social</button>
+            <button class="nav-item" data-tab="requests"><span>07</span>Requests</button>
           </nav>
           <div class="sidebar-note">
             <strong>Privacy note</strong>
@@ -191,6 +192,18 @@
             </div>
           </section>
 
+          <section class="tab-panel" data-panel="requests">
+            <div class="section-heading"><div><p class="eyebrow">Velvet Room</p><h2>Elizabeth's Requests</h2></div><span id="requestSummary" class="section-stat">—</span></div>
+            <div class="info-callout warning">
+              Changing a status only updates the request list. Marking a request Done does not grant its reward or remove requested items, and starting a request early may skip its introduction.
+            </div>
+            <div class="toolbar panel">
+              <label class="search-field"><span class="sr-only">Search requests</span><input id="requestSearch" type="search" placeholder="Search by number or name" /></label>
+              <label><span>Status</span><select id="requestFilter"><option value="all">All requests</option><option value="0">Not started</option><option value="1">In progress</option><option value="3">Done</option></select></label>
+            </div>
+            <article class="panel content-card"><div id="requestList" class="request-list"></div></article>
+          </section>
+
         </div>
 
         <div class="export-bar">
@@ -203,7 +216,7 @@
 
     <footer class="site-footer shell">
       <p>Unofficial fan tool. Not affiliated with ATLUS or SEGA.</p>
-      <p><a href="https://github.com/illusionyy/P3R-Save-EnDecryptor">Encryption reference</a> · <a href="https://github.com/Hertzeil/p3rse">Save offset reference</a> · <a href="https://github.com/rirurin/p3rpc.nativetypes">Native layout reference</a> · <a href="https://github.com/aqiu384/megaten-database">Persona and Episode Aigis item data reference</a> · <a href="https://github.com/aqiu384/megaten-fusion-tool">Party skill reference</a></p>
+      <p><a href="https://github.com/illusionyy/P3R-Save-EnDecryptor">Encryption reference</a> · <a href="https://github.com/Hertzeil/p3rse">Save offset reference</a> · <a href="https://github.com/rirurin/p3rpc.nativetypes">Native layout reference</a> · <a href="https://github.com/aqiu384/megaten-database">Persona and Episode Aigis item data reference</a> · <a href="https://github.com/aqiu384/megaten-fusion-tool">Party skill reference</a> · <a href="https://github.com/rirurin/P3R-Project">Request table reference</a></p>
     </footer>
 
     <dialog id="safetyDialog" class="safety-dialog">

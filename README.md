@@ -34,7 +34,7 @@ The location is also documented by
    it.
 4. Read the warning and review the Overview screen to confirm the expected save
    was loaded.
-5. Make changes in Inventory, Party, Personas, or Social. Every change appears
+5. Make changes in Inventory, Party, Personas, Social, or Requests. Every change appears
    in the Session changes list.
 6. Select **Validate & download** when finished.
 7. Keep the original backup. Rename the downloaded `_edited` file to the exact
@@ -56,12 +56,17 @@ and test them before editing more.
 - Velvet Room Compendium registrations, with search, filters, and bulk unlock actions
 - Social stat point totals, with in-game level references
 - Social Link ranks
+- Elizabeth's request statuses (Not started, In progress, or Done), with search
+  and status filters
 
 Persona skills are selected from a searchable known-skill list. Party skill
 editing includes Fuuka's navigator abilities, but unusual combinations may not
 work correctly and can be replaced by later level-ups. Adding a Persona to the
 protagonist's stock also registers its base form in the Compendium when needed,
 preventing crashes caused by carried Personas with missing registrations.
+
+Changing a request's status only updates Elizabeth's request list. Marking a
+request Done does not grant its reward or remove the requested items.
 
 Current-party editing always keeps the protagonist as leader, allows at most
 three unique combat allies, and excludes Fuuka because she is the navigator.
@@ -74,8 +79,8 @@ remove him or behave incorrectly after his story departure.
 - Steam Episode Aigis saves: inventory, yen, play time, difficulty, Aigis's
   carried Personas, Compendium, and party HP, SP, level, and experience
 - Episode Aigis party stats include playable Aigis, Metis, and the returning
-  party members. Name editing, party formation, party Persona skills, and
-  Social editing are not available for Episode Aigis.
+  party members. Name editing, party formation, party Persona skills, Social,
+  and request editing are not available for Episode Aigis.
 - Episode Aigis uses its own item and Persona tables. Its inventory lists the
   DLC's equipment, with each variant's ability and user, so a specific
   version such as Cannon of Eminence with +Magic Ability can be searched by

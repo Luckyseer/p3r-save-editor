@@ -42,6 +42,13 @@ import {
   setPersonaSkill,
   setPersonaValue,
 } from "./persona-stock.js";
+import {
+  REQUEST_STATUSES,
+  getRequestAreaProblem,
+  getRequests,
+  requestStatusLabel,
+  setRequestStatus,
+} from "./requests.js";
 import { decodeSave, encodeSave } from "./steam-crypto.js";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -57,6 +64,7 @@ const state = {
   partySkills: [],
   personaById: new Map(),
   skillNames: new Map(),
+  requests: [],
   originalRaw: null,
   save: null,
   format: null,
@@ -75,7 +83,8 @@ const elements = Object.fromEntries(
     "itemPage", "partyFormation", "partyGrid", "personaGrid", "compendiumSearch",
     "compendiumFilter", "compendiumSummary", "compendiumGrid", "unlockBaseCompendium",
     "unlockAllCompendium", "compendiumRepair", "compendiumRepairText", "repairCompendium",
-    "socialStats", "socialLinks",
+    "socialStats", "socialLinks", "requestSummary", "requestSearch", "requestFilter",
+    "requestList",
     "dirtyDot", "dirtyLabel", "resetChanges", "downloadSave", "safetyDialog", "toast",
     "skillDialog", "skillDialogTitle", "closeSkillDialog", "skillSearch",
     "skillResultCount", "skillChoices",
@@ -603,6 +612,36 @@ function renderSocial() {
   `).join("");
 }
 
+function renderRequests() {
+  const problem = getRequestAreaProblem(state.save, state.requests);
+  if (problem) {
+    elements.requestSummary.textContent = "Unavailable";
+    elements.requestList.innerHTML = `<div class="empty-state">${escapeHtml(problem)}</div>`;
+    return;
+  }
+  const requests = getRequests(state.save, state.requests);
+  const done = requests.filter((request) => request.status === 3).length;
+  elements.requestSummary.textContent = `${done} / ${requests.length} done`;
+  const query = elements.requestSearch.value.trim().toLowerCase();
+  const filter = elements.requestFilter.value;
+  const visible = requests.filter((request) => (
+    (filter === "all" || request.status === Number(filter))
+    && (!query || String(request.number) === query || request.title.toLowerCase().includes(query))
+  ));
+  if (!visible.length) {
+    elements.requestList.innerHTML = '<div class="empty-state">No requests match the current filters.</div>';
+    return;
+  }
+  elements.requestList.innerHTML = visible.map((request) => `
+    <div class="request-row">
+      <span class="request-number">${request.number}</span>
+      <strong>${escapeHtml(request.title)}</strong>
+      <select aria-label="Request ${request.number} status" data-request-slot="${request.slot}">
+        ${REQUEST_STATUSES.map((status) => `<option value="${status.value}"${status.value === request.status ? " selected" : ""}>${status.label}</option>`).join("")}
+      </select>
+    </div>`).join("");
+}
+
 function renderAll() {
   renderOverview();
   renderInventory();
@@ -611,6 +650,7 @@ function renderAll() {
   renderPersonas();
   renderCompendium();
   renderSocial();
+  renderRequests();
   renderChanges();
 }
 
@@ -851,6 +891,19 @@ function bindEditorEvents() {
         setSocialLinkRank(state.save, index, after);
         markChange(`social-link:${index}`, `${label} rank`, before, after);
       }, renderSocial);
+    } else if (target.matches("[data-request-slot]")) {
+      const slot = Number(target.dataset.requestSlot);
+      editSafely(() => {
+        const request = getRequests(state.save, state.requests).find((entry) => entry.slot === slot);
+        const after = Number(target.value);
+        setRequestStatus(state.save, state.requests, slot, after);
+        markChange(
+          `request:${slot}`,
+          `Request #${request.number} status`,
+          requestStatusLabel(request.status),
+          requestStatusLabel(after),
+        );
+      }, renderRequests);
     }
   });
 
@@ -916,6 +969,8 @@ function bindToolbarEvents() {
   elements.itemNext.addEventListener("click", () => { state.itemPage += 1; renderInventory(); });
   elements.compendiumSearch.addEventListener("input", renderCompendium);
   elements.compendiumFilter.addEventListener("change", renderCompendium);
+  elements.requestSearch.addEventListener("input", renderRequests);
+  elements.requestFilter.addEventListener("change", renderRequests);
   elements.unlockBaseCompendium.addEventListener("click", () => unlockCompendiumBulk(false));
   elements.unlockAllCompendium.addEventListener("click", () => unlockCompendiumBulk(true));
   elements.repairCompendium.addEventListener("click", repairCompendium);
@@ -966,14 +1021,15 @@ function bindToolbarEvents() {
 async function initialize() {
   try {
     const responses = await Promise.all([
-      "items", "personas", "items-episode-aigis", "personas-episode-aigis", "skills",
+      "items", "personas", "items-episode-aigis", "personas-episode-aigis", "skills", "requests",
     ].map((name) => fetch(`./data/${name}.json`)));
     if (responses.some((response) => !response.ok)) {
       throw new Error("Editor reference data could not be loaded.");
     }
-    const [items, personas, aigisItems, aigisPersonas, skills] = await Promise.all(
+    const [items, personas, aigisItems, aigisPersonas, skills, requests] = await Promise.all(
       responses.map((response) => response.json()),
     );
+    state.requests = requests;
     state.gameData.main = { items, personas };
     state.gameData.episodeAigis = { items: aigisItems, personas: aigisPersonas };
     state.skills = mergeSkills(skills, MUTATION_SKILLS);

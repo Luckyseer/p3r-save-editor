@@ -1,0 +1,608 @@
+[
+  {
+    "slot": 12,
+    "number": 1,
+    "title": "Bring me a Muscle Drink.",
+    "rank": 1
+  },
+  {
+    "slot": 1,
+    "number": 2,
+    "title": "Retrieve the first old document.",
+    "rank": 2
+  },
+  {
+    "slot": 91,
+    "number": 3,
+    "title": "Shadow Hunting Milestone",
+    "rank": 1
+  },
+  {
+    "slot": 97,
+    "number": 4,
+    "title": "Treasure Hunting Milestone",
+    "rank": 2
+  },
+  {
+    "slot": 41,
+    "number": 5,
+    "title": "Create a Persona that's level 13 or above.",
+    "rank": 1
+  },
+  {
+    "slot": 42,
+    "number": 6,
+    "title": "Create a Persona with Kouha.",
+    "rank": 1
+  },
+  {
+    "slot": 81,
+    "number": 7,
+    "title": "Bring me a Juzumaru.",
+    "rank": 3
+  },
+  {
+    "slot": 21,
+    "number": 8,
+    "title": "Experiment with fortune telling.",
+    "rank": 2
+  },
+  {
+    "slot": 14,
+    "number": 9,
+    "title": "I'd like to try all kinds of drinks.",
+    "rank": 1
+  },
+  {
+    "slot": 18,
+    "number": 10,
+    "title": "I'd like to try a beef bowl.",
+    "rank": 2
+  },
+  {
+    "slot": 19,
+    "number": 11,
+    "title": "Please prevail in the Big Eater Challenge.",
+    "rank": 2
+  },
+  {
+    "slot": 73,
+    "number": 12,
+    "title": "Bring me pine resin.",
+    "rank": 2
+  },
+  {
+    "slot": 74,
+    "number": 13,
+    "title": "Bring me a handheld game console.",
+    "rank": 2
+  },
+  {
+    "slot": 2,
+    "number": 14,
+    "title": "Retrieve the second old document.",
+    "rank": 2
+  },
+  {
+    "slot": 92,
+    "number": 15,
+    "title": "Shadow Hunting Milestone #2",
+    "rank": 2
+  },
+  {
+    "slot": 98,
+    "number": 16,
+    "title": "Treasure Hunting Milestone #2",
+    "rank": 3
+  },
+  {
+    "slot": 50,
+    "number": 17,
+    "title": "Fusion Series #1: Emperor, Oberon",
+    "rank": 3
+  },
+  {
+    "slot": 20,
+    "number": 18,
+    "title": "I'd like to be gifted a bouquet of flowers.",
+    "rank": 1
+  },
+  {
+    "slot": 37,
+    "number": 19,
+    "title": "I want Jack Frost dolls.",
+    "rank": 3
+  },
+  {
+    "slot": 16,
+    "number": 20,
+    "title": "Bring me some potent medicine.",
+    "rank": 1
+  },
+  {
+    "slot": 3,
+    "number": 21,
+    "title": "Retrieve the third old document.",
+    "rank": 2
+  },
+  {
+    "slot": 93,
+    "number": 22,
+    "title": "Shadow Hunting Milestone #3",
+    "rank": 2
+  },
+  {
+    "slot": 101,
+    "number": 23,
+    "title": "Persona Fusion Milestone",
+    "rank": 2
+  },
+  {
+    "slot": 43,
+    "number": 24,
+    "title": "Create a Persona that's level 23 or above.",
+    "rank": 2
+  },
+  {
+    "slot": 51,
+    "number": 25,
+    "title": "Fusion Series #2: Chariot, Mithras",
+    "rank": 3
+  },
+  {
+    "slot": 82,
+    "number": 26,
+    "title": "Bring me an Onimaru Kunitsuna.",
+    "rank": 3
+  },
+  {
+    "slot": 75,
+    "number": 27,
+    "title": "Bring me a triangular sword.",
+    "rank": 2
+  },
+  {
+    "slot": 76,
+    "number": 28,
+    "title": "Bring me protein not for pros.",
+    "rank": 2
+  },
+  {
+    "slot": 30,
+    "number": 29,
+    "title": "I want to look fashionable.",
+    "rank": 2
+  },
+  {
+    "slot": 4,
+    "number": 30,
+    "title": "Retrieve the fourth old document.",
+    "rank": 2
+  },
+  {
+    "slot": 94,
+    "number": 31,
+    "title": "Shadow Hunting Milestone #4",
+    "rank": 3
+  },
+  {
+    "slot": 99,
+    "number": 32,
+    "title": "Treasure Hunting Milestone #3",
+    "rank": 3
+  },
+  {
+    "slot": 102,
+    "number": 33,
+    "title": "Persona Fusion Milestone #2",
+    "rank": 3
+  },
+  {
+    "slot": 44,
+    "number": 34,
+    "title": "Create a Persona with Torrent Shot.",
+    "rank": 2
+  },
+  {
+    "slot": 52,
+    "number": 35,
+    "title": "Fusion Series #3: Hermit, Mothman",
+    "rank": 3
+  },
+  {
+    "slot": 89,
+    "number": 36,
+    "title": "Defeat a rare Shadow #1",
+    "rank": 4
+  },
+  {
+    "slot": 10,
+    "number": 37,
+    "title": "Traverse the Monad Passage.",
+    "rank": 3
+  },
+  {
+    "slot": 24,
+    "number": 38,
+    "title": "I want to eat a chilled taiyaki.",
+    "rank": 3
+  },
+  {
+    "slot": 17,
+    "number": 39,
+    "title": "Let me hear music unique to Gekkoukan.",
+    "rank": 1
+  },
+  {
+    "slot": 22,
+    "number": 40,
+    "title": "I'd like to see a pair of Max Safety Shoes.",
+    "rank": 2
+  },
+  {
+    "slot": 23,
+    "number": 41,
+    "title": "Bring me the mysterious person's autograph.",
+    "rank": 3
+  },
+  {
+    "slot": 66,
+    "number": 42,
+    "title": "Please feed the cat.",
+    "rank": 3
+  },
+  {
+    "slot": 78,
+    "number": 43,
+    "title": "Bring me a Christmas star.",
+    "rank": 2
+  },
+  {
+    "slot": 32,
+    "number": 44,
+    "title": "I wish to feel the ocean.",
+    "rank": 2
+  },
+  {
+    "slot": 5,
+    "number": 45,
+    "title": "Retrieve the fifth old document.",
+    "rank": 2
+  },
+  {
+    "slot": 95,
+    "number": 46,
+    "title": "Shadow Hunting Milestone #5",
+    "rank": 3
+  },
+  {
+    "slot": 100,
+    "number": 47,
+    "title": "Treasure Hunting Milestone #4",
+    "rank": 4
+  },
+  {
+    "slot": 103,
+    "number": 48,
+    "title": "Persona Fusion Milestone #3",
+    "rank": 4
+  },
+  {
+    "slot": 45,
+    "number": 49,
+    "title": "Create a Persona that's level 38 or above.",
+    "rank": 2
+  },
+  {
+    "slot": 112,
+    "number": 50,
+    "title": "Perform King and I.",
+    "rank": 3
+  },
+  {
+    "slot": 85,
+    "number": 51,
+    "title": "Bring me an Outenta Mitsuyo.",
+    "rank": 3
+  },
+  {
+    "slot": 25,
+    "number": 52,
+    "title": "I'd like to try a home-cooked meal.",
+    "rank": 2
+  },
+  {
+    "slot": 26,
+    "number": 53,
+    "title": "I'd like to see a mysterious potato.",
+    "rank": 2
+  },
+  {
+    "slot": 27,
+    "number": 54,
+    "title": "Attempt a hundred shrine visits.",
+    "rank": 3
+  },
+  {
+    "slot": 29,
+    "number": 55,
+    "title": "I'd like to see proof of a bond.",
+    "rank": 3
+  },
+  {
+    "slot": 28,
+    "number": 56,
+    "title": "Look for the drink with my name.",
+    "rank": 3
+  },
+  {
+    "slot": 15,
+    "number": 57,
+    "title": "I'd like to try aojiru.",
+    "rank": 2
+  },
+  {
+    "slot": 33,
+    "number": 58,
+    "title": "I wish to become a straw millionaire.",
+    "rank": 2
+  },
+  {
+    "slot": 6,
+    "number": 59,
+    "title": "Retrieve the sixth old document.",
+    "rank": 2
+  },
+  {
+    "slot": 96,
+    "number": 60,
+    "title": "Shadow Hunting Milestone #6",
+    "rank": 4
+  },
+  {
+    "slot": 47,
+    "number": 61,
+    "title": "Create a Persona that's level 46 or above.",
+    "rank": 2
+  },
+  {
+    "slot": 54,
+    "number": 62,
+    "title": "Fusion Series #4: Lovers, Titania",
+    "rank": 3
+  },
+  {
+    "slot": 55,
+    "number": 63,
+    "title": "Fusion Series #5: Magician, Rangda",
+    "rank": 3
+  },
+  {
+    "slot": 90,
+    "number": 64,
+    "title": "Defeat a rare Shadow #2",
+    "rank": 4
+  },
+  {
+    "slot": 84,
+    "number": 65,
+    "title": "Bring me an Ote-gine.",
+    "rank": 3
+  },
+  {
+    "slot": 13,
+    "number": 66,
+    "title": "Bring me a giant, creepy doll.",
+    "rank": 1
+  },
+  {
+    "slot": 31,
+    "number": 67,
+    "title": "Find me a beautiful tile.",
+    "rank": 3
+  },
+  {
+    "slot": 79,
+    "number": 68,
+    "title": "Bring me a fruit knife.",
+    "rank": 2
+  },
+  {
+    "slot": 80,
+    "number": 69,
+    "title": "Bring me oil.",
+    "rank": 2
+  },
+  {
+    "slot": 7,
+    "number": 70,
+    "title": "Retrieve the seventh old document.",
+    "rank": 2
+  },
+  {
+    "slot": 60,
+    "number": 71,
+    "title": "Fusion Series #6: Strength, Siegfried",
+    "rank": 4
+  },
+  {
+    "slot": 56,
+    "number": 72,
+    "title": "Fusion Series #7: Hierophant, Daisoujou",
+    "rank": 4
+  },
+  {
+    "slot": 83,
+    "number": 73,
+    "title": "Bring me a Mikazuki Munechika.",
+    "rank": 3
+  },
+  {
+    "slot": 38,
+    "number": 74,
+    "title": "I'd like to try sushi.",
+    "rank": 3
+  },
+  {
+    "slot": 61,
+    "number": 75,
+    "title": "Bring me a Sengoku-era helm.",
+    "rank": 3
+  },
+  {
+    "slot": 77,
+    "number": 76,
+    "title": "Bring me a glasses wipe.",
+    "rank": 2
+  },
+  {
+    "slot": 68,
+    "number": 77,
+    "title": "I'd like to walk around Paulownia Mall.",
+    "rank": 1
+  },
+  {
+    "slot": 69,
+    "number": 78,
+    "title": "I'd like to visit Iwatodai Station.",
+    "rank": 1
+  },
+  {
+    "slot": 70,
+    "number": 79,
+    "title": "I'd like to visit Naganaki Shrine.",
+    "rank": 1
+  },
+  {
+    "slot": 71,
+    "number": 80,
+    "title": "I'd like to visit Gekkoukan High.",
+    "rank": 1
+  },
+  {
+    "slot": 72,
+    "number": 81,
+    "title": "I'd like to visit your room.",
+    "rank": 1
+  },
+  {
+    "slot": 8,
+    "number": 82,
+    "title": "Retrieve the last old document.",
+    "rank": 2
+  },
+  {
+    "slot": 9,
+    "number": 83,
+    "title": "Retrieve the progress report.",
+    "rank": 2
+  },
+  {
+    "slot": 48,
+    "number": 84,
+    "title": "Create a Persona with Tempest Slash.",
+    "rank": 3
+  },
+  {
+    "slot": 49,
+    "number": 85,
+    "title": "Create a Persona with Auto-Maraku.",
+    "rank": 3
+  },
+  {
+    "slot": 57,
+    "number": 86,
+    "title": "Fusion Series #8: Death, Alice",
+    "rank": 4
+  },
+  {
+    "slot": 58,
+    "number": 87,
+    "title": "Fusion Series #9: Fool, Loki",
+    "rank": 4
+  },
+  {
+    "slot": 35,
+    "number": 88,
+    "title": "Defeat a Greedy Shadow.",
+    "rank": 4
+  },
+  {
+    "slot": 86,
+    "number": 89,
+    "title": "Bring me a Rai Kunimitsu.",
+    "rank": 3
+  },
+  {
+    "slot": 87,
+    "number": 90,
+    "title": "Bring me a Dojigiri Yasutsuna.",
+    "rank": 3
+  },
+  {
+    "slot": 88,
+    "number": 91,
+    "title": "Bring me a Tonbo-kiri.",
+    "rank": 4
+  },
+  {
+    "slot": 64,
+    "number": 92,
+    "title": "Go clean a restroom.",
+    "rank": 2
+  },
+  {
+    "slot": 65,
+    "number": 93,
+    "title": "Go water the flowers.",
+    "rank": 2
+  },
+  {
+    "slot": 63,
+    "number": 94,
+    "title": "Bring me food for a furry friend.",
+    "rank": 2
+  },
+  {
+    "slot": 67,
+    "number": 95,
+    "title": "Bring me a Featherman R action figure.",
+    "rank": 2
+  },
+  {
+    "slot": 62,
+    "number": 96,
+    "title": "I'd like to try Oden Juice.",
+    "rank": 3
+  },
+  {
+    "slot": 34,
+    "number": 97,
+    "title": "Bring me my Christmas present.",
+    "rank": 3
+  },
+  {
+    "slot": 59,
+    "number": 98,
+    "title": "Fusion Series #10: Tower, Masakado",
+    "rank": 5
+  },
+  {
+    "slot": 11,
+    "number": 99,
+    "title": "Defeat the Shadow of the Void.",
+    "rank": 5
+  },
+  {
+    "slot": 110,
+    "number": 100,
+    "title": "Bring me a Bloody Button.",
+    "rank": 5
+  },
+  {
+    "slot": 111,
+    "number": 101,
+    "title": "Take out the ultimate adversary.",
+    "rank": 5
+  }
+]

@@ -192,6 +192,12 @@ input[type="checkbox"] { accent-color: var(--cyan); width: 17px; height: 17px; }
 .social-link { display: grid; grid-template-columns: 1fr 74px; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(125,169,255,.1); }
 .social-link strong, .social-link small { display: block; }
 .social-link small { color: var(--muted); font-size: .65rem; }
+.request-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 24px; }
+.request-row { display: grid; grid-template-columns: 40px minmax(0,1fr) 150px; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(125,169,255,.1); }
+.request-row strong { font-size: .8rem; font-weight: 600; }
+.request-number { color: var(--cyan-soft); font-weight: 700; font-variant-numeric: tabular-nums; }
+.request-row select { min-height: 38px; padding: 7px 10px; }
+.request-list .empty-state { grid-column: 1 / -1; }
 .export-bar { position: absolute; z-index: 8; bottom: 0; left: 250px; right: 0; min-height: 88px; padding: 15px clamp(20px,4vw,54px); display: flex; align-items: center; gap: 13px; background: rgba(2,8,47,.96); border-top: 1px solid var(--line); backdrop-filter: blur(18px); }
 .export-status { margin-right: auto; display: grid; grid-template-columns: 10px 1fr; column-gap: 9px; align-items: center; }
 .export-status > span { width: 8px; height: 8px; background: #50639f; border-radius: 50%; grid-row: 1 / span 2; }
@@ -236,6 +242,7 @@ input[type="checkbox"] { accent-color: var(--cyan); width: 17px; height: 17px; }
   .overview-grid { grid-template-columns: repeat(2,1fr); }
   .party-formation-card .party-formation { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .compendium-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .request-list { grid-template-columns: 1fr; }
 }
 @media (max-width: 720px) {
   .shell, .site-header { width: min(100% - 24px,1180px); }
@@ -247,6 +254,8 @@ input[type="checkbox"] { accent-color: var(--cyan); width: 17px; height: 17px; }
   .overview-grid, .two-columns, .party-grid, .persona-grid, .compendium-grid, .social-layout { grid-template-columns: 1fr; }
   .party-formation-card .party-formation { grid-template-columns: 1fr; }
   .skill-choices { grid-template-columns: 1fr; }
+  .request-row { grid-template-columns: 34px minmax(0,1fr); }
+  .request-row select { grid-column: 2; }
   .toolbar { align-items: stretch; flex-direction: column; }
   .toolbar label { width: 100%; }
   .compendium-actions { width: 100%; margin-left: 0; }
